@@ -1,56 +1,80 @@
-# Welcome to your Expo app 👋
+# Reservas Deportivas — base del proyecto
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+App para reservar canchas de la Dirección de Deportes de Villaguay (Desarrollo para Móviles, UNER).
+Esta carpeta es el **punto de partida**: ya tiene la estructura, los tipos del PRD, datos inventados,
+la conexión con la API y 4 pantallas de ejemplo. Falta construir el resto entre las seis.
 
-## Get started
+## 1. Cómo arrancar (una sola vez por compu)
 
-1. Install dependencies
-
-   ```bash
+1. Instalar [Node.js](https://nodejs.org) (versión LTS) y la app **Expo Go** en el celular.
+2. En esta carpeta, en la terminal:
+   ```
    npm install
+   npm run instalar-extras
    ```
+   El segundo comando instala cámara, mapa, ubicación, notificaciones, base de datos, huella, etc.
+   **No te lo saltees:** `app.json` ya los nombra y sin instalarlos `expo start` da error.
+3. Copiá `.env.example` como `.env` (por ahora dejalo con `EXPO_PUBLIC_USAR_MOCKS=true`).
+4. `npm start`, y escaneá el QR con Expo Go (celular y compu en la misma wifi).
 
-2. Start the app
+## 2. Datos inventados o API real
 
-   ```bash
-   npx expo start
-   ```
+Se cambia en `.env`, sin tocar ninguna pantalla:
 
-In the output, you'll find options to open the app in a
+| Quiero | En `.env` |
+|---|---|
+| Usar datos inventados (`src/mocks`) | `EXPO_PUBLIC_USAR_MOCKS=true` |
+| Usar la API real | `EXPO_PUBLIC_USAR_MOCKS=false` y `EXPO_PUBLIC_API_URL=http://<IP de la compu con la API>:3000` |
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+Usuarios de la API de demo (contraseña de todos: `villaguay2026`):
+`emiliano@mail.com` (jugador), `marcelo@villaguay.demo.ar` (encargado), `nahuel@villaguay.demo.ar` (administrador).
 
-You can start developing by editing the files inside the **src/app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+Después de cambiar `.env` hay que reiniciar con `npm start`.
 
-## Get a fresh project
+## 3. Dónde va cada cosa
 
-When you're ready, run:
+| Carpeta | Qué tiene |
+|---|---|
+| `src/tipos/` | Los tipos del PRD y de la API. **No se tocan.** Si algo no coincide con la API, se avisa a la cátedra. |
+| `src/mocks/` | Datos inventados, con los casos feos (día de lluvia, grilla sin turnos libres, fija de los martes, error de red). |
+| `src/servicios/` | **Lo único que habla con datos.** Las pantallas nunca importan un mock ni hacen `fetch`. |
+| `src/app/` | Las pantallas (Expo Router: cada archivo es una pantalla). |
+| `src/componentes/` | Piezas reutilizables. `EstadoPantalla` ya resuelve cargando / error / vacío. |
+| `src/tema/` | Colores claros y oscuros, y tamaños de letra grandes. |
 
-```bash
-npm run reset-project
-```
+Para probar la app sin red: en `src/mocks/config.ts` poné `errorDeRed: true`.
 
-This command will move the starter code to the **example** directory and create a blank **src/app** directory where you can start developing.
+## 4. Quién completa qué
 
-### Other setup steps
+| Parte | Dónde empieza |
+|---|---|
+| Base y entrega | `app.json`, `eas.json`, builds, ícono definitivo |
+| Cuenta y sesión | `src/app/(tabs)/yo.tsx` (hoy es un botón provisorio), `src/servicios/auth.ts`, `sesion.ts` |
+| Espacios y mapa | `src/app/(tabs)/index.tsx`, `src/app/espacio/[id].tsx` |
+| Grilla y reservas | `src/app/espacio/[id].tsx`, `src/app/(tabs)/reservas.tsx`, `src/servicios/reservas.ts` |
+| QR e ingreso | pantalla nueva dentro de `src/app/` |
+| Offline y avisos | envolver `src/servicios/` con SQLite; notificaciones locales |
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+## 5. Reglas del grupo
 
-## Learn more
+- Una rama por persona, cambios chicos, y se junta en `main` seguido.
+- Ninguna pantalla importa de `src/mocks`. Siempre por `src/servicios`.
+- El token va en `expo-secure-store` (`src/servicios/sesion.ts`), nunca en `kv-store`.
+- Los íconos son `@react-native-vector-icons/ionicons` (no `@expo/vector-icons`). Audio y video: `expo-audio` / `expo-video`. Archivos: la API nueva de `expo-file-system` (`File`, `Directory`, `Paths`).
+- Antes de subir: `npm run typecheck` tiene que pasar sin errores.
 
-To learn more about developing your project with Expo, look at the following resources:
+## 6. Antes del primer build (APK)
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+1. `npm i -g eas-cli`, `eas login`, `eas build:configure` (te pide crear el proyecto en Expo).
+2. `app.json`: el identificador `ar.edu.uner.reservasdeportivas` se puede cambiar, pero **antes del primer build**.
+3. `app.json`: reemplazar `REEMPLAZAR_CON_LA_API_KEY_DE_GOOGLE_MAPS` por una API key de Google Maps. Sin eso, el mapa sale en blanco en el APK (en Expo Go anda igual).
+4. `eas.json`, perfil `preview`: reemplazar la URL de la API por la pública (Render + Supabase). Una IP de compu no sirve en un APK instalado.
+5. Reemplazar el ícono provisorio (`assets/images/icon.png`: PNG cuadrado 1024×1024, sin transparencias) y el splash.
+6. `eas build --platform android --profile preview`.
+7. Instalar el APK en un teléfono real, con modo avión, sin la compu cerca.
 
-## Join the community
+## Qué se probó y qué no
 
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+Probado: el proyecto compila sin errores (`tsc`), la lógica de la grilla da lo esperado con los casos feos,
+`npm run instalar-extras` instala todo y los plugins de `app.json` resuelven.
+**No probado:** correr la app en un teléfono. Si algo falla al abrir en Expo Go, avisen el mensaje exacto.
