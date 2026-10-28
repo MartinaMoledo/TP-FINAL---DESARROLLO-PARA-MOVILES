@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Reservas Deportivas — base del proyecto
 
 App para reservar canchas de la Dirección de Deportes de Villaguay (Desarrollo para Móviles, UNER).
@@ -78,3 +79,6 @@ Para probar la app sin red: en `src/mocks/config.ts` poné `errorDeRed: true`.
 Probado: el proyecto compila sin errores (`tsc`), la lógica de la grilla da lo esperado con los casos feos,
 `npm run instalar-extras` instala todo y los plugins de `app.json` resuelven.
 **No probado:** correr la app en un teléfono. Si algo falla al abrir en Expo Go, avisen el mensaje exacto.
+=======
+# TRABAJO-FINAL--Desarrollo-para-moviles
+>>>>>>> 76c052d62139c2ba35a289250157c3928bade965
