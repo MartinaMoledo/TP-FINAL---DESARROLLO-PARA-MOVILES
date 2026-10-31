@@ -18,6 +18,7 @@ export default function LayoutPestanas() {
     >
       <Tabs.Screen name="index" options={{ title: 'Espacios' }} />
       <Tabs.Screen name="reservas" options={{ title: 'Mis reservas' }} />
+      <Tabs.Screen name="escanear" options={{ title: 'Escanear QR' }} />
       <Tabs.Screen name="yo" options={{ title: 'Yo' }} />
     </Tabs>
   );

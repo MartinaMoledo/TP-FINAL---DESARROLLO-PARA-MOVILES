@@ -15,7 +15,19 @@ export const reservasServicio = {
   async misReservas(cuando: Momento = 'proximas'): Promise<Reserva[]> {
     if (USAR_MOCKS) {
       await esperar();
-      return RESERVAS_MOCK.filter((r) => (cuando === 'proximas' ? r.estado === 'confirmada' : r.estado !== 'confirmada'));
+      return RESERVAS_MOCK.filter((r) => {
+        const fechaTurno = r.turnoId.match(/(\d{4})-(\d{2})-(\d{2})-(\d{2})$/);
+
+        if (!fechaTurno) return false;
+
+        const [, anio, mes, dia, hora] = fechaTurno;
+        const inicio = aISOArgentina(`${anio}-${mes}-${dia}`, `${hora}:00`);
+        const esProxima = Date.parse(inicio) > Date.now();
+
+        return cuando === 'proximas'
+          ? esProxima && r.estado === 'confirmada'
+          : !esProxima || r.estado !== 'confirmada';
+      });
     }
     const { datos } = await pedirLista<Reserva>('/yo/reservas', { conToken: true, query: { cuando } });
     return datos;
@@ -32,7 +44,12 @@ export const reservasServicio = {
         throw new ErrorApi('TURNO_OCUPADO', 'Ese turno ya fue reservado.', 409);
       }
       // turnoId mock: tur-<espacioId>-<AAAA-MM-DD>-<hh>
-      const [, espacioId, anio, mes, dia, hh] = turnoId.split('-');
+      const partes = turnoId.split('-');
+      const hh = partes.pop()!;
+      const dia = partes.pop()!;
+      const mes = partes.pop()!;
+      const anio = partes.pop()!;
+      const espacioId = partes.slice(1).join('-');
       const fecha = `${anio}-${mes}-${dia}`;
       const inicio = aISOArgentina(fecha, `${hh}:00`);
       const id = `res-${Date.now()}`;
