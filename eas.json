@@ -13,6 +13,11 @@
         "EXPO_PUBLIC_USAR_MOCKS": "false"
       }
     },
-    "production": {}
+    "production": {
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://REEMPLAZAR-con-la-url-publica-de-la-api",
+        "EXPO_PUBLIC_USAR_MOCKS": "false"
+      }
+    }
   }
 }
