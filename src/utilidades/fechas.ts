@@ -22,6 +22,9 @@ export function diaDeLaSemana(fecha: string): number {
   return new Date(`${fecha}T12:00:00`).getDay();
 }
 
+/** Nombres cortos de los días, en el orden de `diaDeLaSemana`. */
+export const diasDeLaSemana = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'] as const;
+
 /** "AAAA-MM-DD" + "HH:MM" -> ISO con zona de Argentina. Ej: "2026-09-19T19:00:00-03:00". */
 export function aISOArgentina(fecha: string, hora: string): string {
   return `${fecha}T${hora === '24:00' ? '23:59' : hora}:00-03:00`;

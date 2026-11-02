@@ -1,9 +1,10 @@
-# Reservas Deportivas — base del proyecto
+# Reservas Deportivas
 
 App para reservar canchas de la Dirección de Deportes de Villaguay (Desarrollo para Móviles, UNER).
 
-Esta carpeta es el **punto de partida**: tiene la estructura, los tipos del PRD, datos inventados,
-la conexión con la API y cuatro pantallas de ejemplo. Falta construir el resto entre las seis.
+Ya tiene la identidad visual, la sesión con roles (jugador, encargado y administrador), la zona del
+personal (agenda, reservas del día y escaneo de QR), los componentes compartidos y la conexión con
+la API real. Falta completar las partes del resto del grupo.
 
 ## 1. Cómo arrancar (una sola vez por compu)
 
@@ -20,9 +21,8 @@ la conexión con la API y cuatro pantallas de ejemplo. Falta construir el resto 
 4. `npm start` y escanear el QR con Expo Go (celular y compu en la misma wifi).
 
 > Las librerías de cámara, mapa, ubicación, notificaciones, SQLite, huella, audio, video y archivos
-> **todavía no están instaladas**. Se agregan cuando cada persona empiece su parte, siempre con
-> `npx expo install <paquete>` (nunca `npm install` a mano, porque instala versiones incompatibles).
-> Ejemplo: `npx expo install expo-camera expo-sqlite`.
+> **ya están instaladas**. Si hace falta agregar otra, usá siempre `npx expo install <paquete>`
+> (nunca `npm install` a mano, porque instala versiones incompatibles).
 
 ## 2. Datos inventados o API real
 
@@ -48,23 +48,33 @@ Usuarios de la API de demo (contraseña de todos: `villaguay2026`):
 | `src/mocks/` | Datos inventados, con los casos feos (día de lluvia, grilla sin turnos libres, fija de los martes, error de red). |
 | `src/servicios/` | **Lo único que habla con datos.** Las pantallas nunca importan un mock ni hacen `fetch`. |
 | `src/app/` | Las pantallas (Expo Router: cada archivo es una pantalla). |
-| `src/components/` | Piezas reutilizables. `EstadoPantalla` ya resuelve cargando / error / vacío. |
+| `src/components/` | Piezas reutilizables: `Boton`, `Tarjeta`, `Etiqueta`, `CampoTexto`, `SelectorFecha` y `EstadoPantalla`. |
+| `src/contextos/` | `SesionContexto`: quién entró, su rol y las acciones de ingreso, registro y salida. |
 | `src/hooks/` | Hooks compartidos. `useCargar` carga datos de un servicio y devuelve los tres estados. |
 | `src/tema/` | Colores claros y oscuros, y tamaños de letra grandes. |
 | `src/utilidades/` | Fechas y otras funciones auxiliares. |
 
 Para probar la app sin red: en `src/mocks/config.ts` poné `errorDeRed: true`.
 
-## 4. Quién completa qué
+## 4. Pantallas por rol
 
-| Parte | Dónde empieza |
+| Rol | Pestañas | Puede |
+|---|---|---|
+| Sin cuenta | Espacios, Reservas, Yo | Mirar espacios y grilla. Para reservar se le ofrece ingresar o crear cuenta. |
+| `jugador` | Espacios, Reservas, Yo | Reservar, ver sus turnos, mostrar el QR y cancelar. |
+| `encargado` / `administrador` | Agenda, Del día, Escanear, Yo | Ver la agenda, los datos de contacto, marcar ausentes y registrar ingresos. |
+
+El layout raíz redirige si alguien intenta abrir una zona que no le corresponde. La API también
+valida los permisos y responde `403`.
+
+| Parte | Dónde está |
 |---|---|
-| Base y entrega | `app.json`, `eas.json`, builds, ícono definitivo |
-| Cuenta y sesión | `src/app/(tabs)/yo.tsx` (hoy es un botón provisorio), `src/servicios/auth.ts`, `sesion.ts` |
+| Identidad y build | `app.json`, `app.config.ts`, `eas.json`, `assets/images/` |
+| Cuenta y sesión | `src/app/(auth)/`, `src/app/(tabs)/yo.tsx`, `src/contextos/SesionContexto.tsx` |
 | Espacios y mapa | `src/app/(tabs)/index.tsx`, `src/app/espacio/[id].tsx` |
 | Grilla y reservas | `src/app/espacio/[id].tsx`, `src/app/(tabs)/reservas.tsx`, `src/servicios/reservas.ts` |
-| QR e ingreso | pantalla nueva dentro de `src/app/` |
-| Offline y avisos | envolver `src/servicios/` con SQLite; notificaciones locales |
+| Personal y QR | `src/app/(tabs)/agenda.tsx`, `reservas-dia.tsx`, `escanear.tsx`, `src/servicios/personal.ts` |
+| Offline y avisos | pendiente: SQLite y notificaciones locales |
 
 ## 5. Reglas del grupo
 
@@ -82,16 +92,18 @@ Para probar la app sin red: en `src/mocks/config.ts` poné `errorDeRed: true`.
 
 ## 6. Antes del primer build (APK)
 
-1. `npm i -g eas-cli`, `eas login` y `eas build:configure` (crea el proyecto en Expo y agrega el `projectId`).
+1. `npx eas-cli@latest login` y `npx eas-cli@latest build:configure` (crea el proyecto en Expo y agrega el `projectId`).
 2. El identificador `ar.edu.uner.reservasdeportivas` ya está en `app.json` (`ios.bundleIdentifier` y
    `android.package`). Se puede cambiar, pero **antes del primer build**.
 3. `eas.json`: en el perfil `preview`, reemplazar la URL de la API por la pública (Render + Supabase).
    Una IP de compu no sirve en un APK instalado. El perfil `production` tiene el mismo placeholder.
-4. Reemplazar el ícono provisorio (`assets/images/icon.png`: PNG cuadrado 1024×1024, sin transparencias)
-   y el splash (`assets/images/splash-icon.png`).
-5. Si agregan el mapa: instalar `expo-maps` y configurar la API key de Google Maps en `app.json`
-   (`android.config.googleMaps.apiKey`). Sin eso, el mapa sale en blanco en el APK.
-6. `eas build --platform android --profile preview`.
+4. El ícono (`assets/images/icon.png`) y el splash (`assets/images/splash-icon.png`) ya son los de la
+   marca. Se pueden reemplazar manteniendo el PNG cuadrado 1024×1024 sin transparencias.
+5. Para el mapa de Android: cargar `EXPO_PUBLIC_GOOGLE_MAPS_API_KEY` en el entorno del build. La clave
+   se configura en Google Cloud con el package `ar.edu.uner.reservasdeportivas` y la huella SHA-1 del
+   keystore. `app.config.ts` la escribe en `android.config.googleMaps.apiKey`. Sin clave, el mapa sale
+   en blanco en el APK.
+6. `npx eas-cli@latest build --platform android --profile preview`.
 7. Instalar el APK en un teléfono real, con modo avión, sin la compu cerca.
 
 > En Expo Go funcionan las notificaciones **locales**. Las push remotas en Android no funcionan en
@@ -99,6 +111,10 @@ Para probar la app sin red: en `src/mocks/config.ts` poné `errorDeRed: true`.
 
 ## Qué se probó y qué no
 
-Probado: `npm run typecheck` y `npm run lint` pasan, el proyecto bundlea para Android y web con
-`npx expo export`, y los casos feos de la grilla dan lo esperado.
-**No probado:** correr la app en un teléfono. Si algo falla al abrir en Expo Go, avisen el mensaje exacto.
+Probado: `npm run typecheck`, `npx expo-doctor` (20/20), el bundle de Android con `npx expo export`,
+y contra la API real el ingreso, `/yo`, la agenda, las reservas del día y los datos de contacto.
+`npm run lint` pasa en los archivos nuevos; falla sólo en `src/app/espacio/[id].tsx` por un
+`Date.now()` durante el render (código de la compañera, no se tocó).
+
+**No probado:** correr la app en un teléfono, el build de EAS (falta cuenta y `projectId`) y el mapa
+de Android (falta la clave de Google Maps).

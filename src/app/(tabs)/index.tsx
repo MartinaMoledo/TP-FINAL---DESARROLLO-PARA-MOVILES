@@ -83,13 +83,13 @@ export default function EspaciosPantalla() {
                       estilos.filtro,
                       {
                         backgroundColor:
-                          deporte === d ? '#D71920' : t.tarjeta,
-                        borderColor: t.borde,
+                          deporte === d ? t.primario : t.tarjeta,
+                        borderColor: deporte === d ? t.primario : t.borde,
                       },
                     ]}
                   >
                     <Text style={{
-                      color: deporte === d ? '#FFFFFF' : t.texto
+                      color: deporte === d ? t.sobrePrimario : t.texto
                     }}>
                       {d}
                     </Text>
@@ -110,13 +110,13 @@ export default function EspaciosPantalla() {
                       estilos.filtro,
                       {
                         backgroundColor:
-                          complejo === c ? '#D71920' : t.tarjeta,
-                        borderColor: t.borde,
+                          complejo === c ? t.primario : t.tarjeta,
+                        borderColor: complejo === c ? t.primario : t.borde,
                       },
                     ]}
                   >
                     <Text style={{
-                      color: complejo === c ? '#FFFFFF' : t.texto
+                      color: complejo === c ? t.sobrePrimario : t.texto
                     }}>
                       {c}
                     </Text>

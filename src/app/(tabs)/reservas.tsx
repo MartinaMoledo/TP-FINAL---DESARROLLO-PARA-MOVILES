@@ -1,20 +1,80 @@
 import { useState } from 'react';
+import { router } from 'expo-router';
 import {
+  ActivityIndicator,
   Alert,
   FlatList,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   View,
 } from 'react-native';
-
-import { EstadoPantalla } from '@/components/EstadoPantalla';
-import { useCargar } from '@/hooks/useCargar';
-import { reservasServicio, type Momento } from '@/servicios/reservas';
-import { tamanos, useTema } from '@/tema/useTema';
 import QRCode from 'react-native-qrcode-svg';
 
+import { Boton } from '@/components/Boton';
+import { EstadoPantalla } from '@/components/EstadoPantalla';
+import { Etiqueta, etiquetaDeReserva } from '@/components/Etiqueta';
+import { Tarjeta } from '@/components/Tarjeta';
+import { esPersonal, useSesion } from '@/contextos/SesionContexto';
+import { useCargar } from '@/hooks/useCargar';
+import { ErrorApi } from '@/servicios/cliente';
+import { reservasServicio, type Momento } from '@/servicios/reservas';
+import { tamanos, useTema } from '@/tema/useTema';
+
 export default function ReservasPantalla() {
+  const t = useTema();
+  const { usuario, cargando } = useSesion();
+
+  if (cargando) {
+    return (
+      <View style={[estilos.centro, { backgroundColor: t.fondo }]}>
+        <ActivityIndicator size="large" color={t.primario} />
+      </View>
+    );
+  }
+
+  if (!usuario) {
+    return (
+      <ScrollView
+        style={{ backgroundColor: t.fondo }}
+        contentContainerStyle={estilos.contenido}
+      >
+        <Text style={[estilos.titulo, { color: t.texto }]}>Mis reservas</Text>
+        <Tarjeta style={estilos.tarjeta}>
+          <Text style={[estilos.subtitulo, { color: t.texto }]}>
+            Entrá para ver tus reservas
+          </Text>
+          <Text style={[estilos.texto, { color: t.textoSuave }]}>
+            Sin cuenta podés mirar la disponibilidad. Para reservar un turno y ver tu
+            código QR, ingresá o creá una cuenta.
+          </Text>
+          <Boton titulo="Ingresar" onPress={() => router.push('/(auth)/ingreso')} />
+          <Boton
+            titulo="Crear cuenta"
+            variante="secundario"
+            onPress={() => router.push('/(auth)/registro')}
+          />
+        </Tarjeta>
+      </ScrollView>
+    );
+  }
+
+  if (esPersonal(usuario)) {
+    return (
+      <View style={[estilos.centro, { backgroundColor: t.fondo }]}>
+        <Text style={[estilos.texto, { color: t.textoSuave, textAlign: 'center' }]}>
+          Las reservas del día están en la pestaña “Del día” de la zona del personal.
+        </Text>
+        <Boton titulo="Ir a la agenda" onPress={() => router.replace('/(tabs)/agenda')} />
+      </View>
+    );
+  }
+
+  return <ListaReservas />;
+}
+
+function ListaReservas() {
   const t = useTema();
   const [momento, setMomento] = useState<Momento>('proximas');
 
@@ -23,7 +83,7 @@ export default function ReservasPantalla() {
     [momento]
   );
 
-  const cancelarReserva = (reservaId: string) => {
+  function cancelarReserva(reservaId: string) {
     Alert.alert(
       'Cancelar reserva',
       '¿Estás seguro de que querés cancelar este turno?',
@@ -40,41 +100,45 @@ export default function ReservasPantalla() {
             } catch (e) {
               Alert.alert(
                 'No se pudo cancelar',
-                e instanceof Error ? e.message : 'Ocurrió un error.'
+                e instanceof ErrorApi ? e.message : 'Ocurrió un error.'
               );
             }
           },
         },
       ]
     );
-  };
+  }
 
   return (
     <View style={[estilos.pantalla, { backgroundColor: t.fondo }]}>
       <View style={estilos.filtros}>
-        {(['proximas', 'pasadas'] as Momento[]).map((opcion) => (
-          <Pressable
-            key={opcion}
-            onPress={() => setMomento(opcion)}
-            style={[
-              estilos.filtro,
-              {
-                backgroundColor:
-                  momento === opcion ? '#D71920' : t.tarjeta,
-                borderColor: t.borde,
-              },
-            ]}
-          >
-            <Text
-              style={{
-                color: momento === opcion ? '#FFFFFF' : t.texto,
-                fontWeight: '700',
-              }}
+        {(['proximas', 'pasadas'] as Momento[]).map((opcion) => {
+          const activo = momento === opcion;
+          return (
+            <Pressable
+              key={opcion}
+              accessibilityRole="button"
+              accessibilityState={{ selected: activo }}
+              onPress={() => setMomento(opcion)}
+              style={[
+                estilos.filtro,
+                {
+                  backgroundColor: activo ? t.primario : t.tarjeta,
+                  borderColor: activo ? t.primario : t.borde,
+                },
+              ]}
             >
-              {opcion === 'proximas' ? 'Próximas' : 'Pasadas'}
-            </Text>
-          </Pressable>
-        ))}
+              <Text
+                style={{
+                  color: activo ? t.sobrePrimario : t.texto,
+                  fontWeight: '700',
+                }}
+              >
+                {opcion === 'proximas' ? 'Próximas' : 'Pasadas'}
+              </Text>
+            </Pressable>
+          );
+        })}
       </View>
 
       <EstadoPantalla
@@ -92,52 +156,44 @@ export default function ReservasPantalla() {
           data={datos ?? []}
           keyExtractor={(r) => r.id}
           contentContainerStyle={estilos.lista}
-          renderItem={({ item }) => (
-            <View
-              style={[
-                estilos.tarjeta,
-                {
-                  backgroundColor: t.tarjeta,
-                  borderColor: t.borde,
-                },
-              ]}
-            >
-              <Text style={[estilos.titulo, { color: t.texto }]}>
-                {item.turnoId}
-              </Text>
+          renderItem={({ item }) => {
+            const etiqueta = etiquetaDeReserva(item.estado);
 
-              <Text style={[estilos.texto, { color: t.textoSuave }]}>
-                {item.cantidadPersonas} personas
-              </Text>
-              <View style={estilos.contenedorQR}>
-                <QRCode
-                  value={item.codigoQr}
-                  size={160}
-                  backgroundColor="#FFFFFF"
-                  color="#000000"
-                />
-              </View>
-
-              <Text style={[estilos.texto, { color: t.textoSuave }]}>
-                Estado: {item.estado}
-              </Text>
-
-              <Text style={[estilos.texto, { color: t.textoSuave }]}>
-                Código: {item.codigoQr}
-              </Text>
-
-              {momento === 'proximas' && item.estado === 'confirmada' && (
-                <Pressable
-                  onPress={() => cancelarReserva(item.id)}
-                  style={estilos.botonCancelar}
-                >
-                  <Text style={estilos.textoCancelar}>
-                    Cancelar reserva
+            return (
+              <Tarjeta style={estilos.tarjeta}>
+                <View style={estilos.filaSuperior}>
+                  <Text style={[estilos.subtitulo, { color: t.texto }]}>
+                    {item.cantidadPersonas} personas
                   </Text>
-                </Pressable>
-              )}
-            </View>
-          )}
+                  <Etiqueta texto={etiqueta.texto} tono={etiqueta.tono} />
+                </View>
+
+                {item.estado === 'confirmada' ? (
+                  <View style={[estilos.contenedorQR, { borderColor: t.borde }]}>
+                    <QRCode
+                      value={item.codigoQr}
+                      size={160}
+                      backgroundColor="#FFFFFF"
+                      color="#000000"
+                    />
+                  </View>
+                ) : null}
+
+                <Text style={[estilos.texto, { color: t.textoSuave }]}>
+                  Código: {item.codigoQr}
+                </Text>
+
+                {momento === 'proximas' && item.estado === 'confirmada' ? (
+                  <Boton
+                    titulo="Cancelar reserva"
+                    variante="peligro"
+                    onPress={() => cancelarReserva(item.id)}
+                    style={estilos.botonCancelar}
+                  />
+                ) : null}
+              </Tarjeta>
+            );
+          }}
         />
       </EstadoPantalla>
     </View>
@@ -146,61 +202,43 @@ export default function ReservasPantalla() {
 
 const estilos = StyleSheet.create({
   pantalla: { flex: 1 },
-
+  centro: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24, gap: 16 },
+  contenido: { padding: 20, paddingBottom: 40, gap: 16 },
+  titulo: { fontSize: 30, fontWeight: '800', marginTop: 8 },
+  subtitulo: { fontSize: tamanos.texto, fontWeight: '800' },
+  texto: { fontSize: tamanos.texto, lineHeight: 23 },
+  tarjeta: { gap: 10 },
   filtros: {
     flexDirection: 'row',
     padding: 16,
     gap: 10,
   },
-
   filtro: {
     flex: 1,
+    minHeight: 48,
     padding: 12,
-    borderRadius: 10,
+    borderRadius: 12,
     borderWidth: 1,
     alignItems: 'center',
+    justifyContent: 'center',
   },
-
   lista: {
     padding: 16,
     paddingTop: 0,
     gap: 12,
   },
-
-  tarjeta: {
-    padding: 16,
-    borderRadius: 14,
-    borderWidth: 1,
-    gap: 8,
-  },
-
-  titulo: {
-    fontSize: tamanos.texto,
-    fontWeight: '700',
-  },
-
-  texto: {
-    fontSize: tamanos.texto,
-  },
-
-  botonCancelar: {
-    borderWidth: 1,
-    borderColor: '#D71920',
-    borderRadius: 10,
-    padding: 12,
+  filaSuperior: {
+    flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 8,
-  },
-
-  textoCancelar: {
-    color: '#D71920',
-    fontWeight: '700',
+    justifyContent: 'space-between',
+    gap: 10,
   },
   contenedorQR: {
-  alignItems: 'center',
-  padding: 20,
-  backgroundColor: '#FFFFFF',
-  borderRadius: 12,
-  marginTop: 10,
+    alignItems: 'center',
+    padding: 20,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    borderWidth: 1,
   },
+  botonCancelar: { marginTop: 4, minHeight: 48 },
 });
