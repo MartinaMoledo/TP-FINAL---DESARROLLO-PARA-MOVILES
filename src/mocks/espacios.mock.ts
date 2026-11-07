@@ -43,4 +43,28 @@ export const ESPACIOS_MOCK: Espacio[] = [
     imagenes: [], videoUrl: null,
     reglas: 'Traer pelotas propias.', activo: true,
   },
+  {
+    id: 'esp-06', nombre: 'Gimnasio Cerrado', deporteId: 'dep-gimnasio',
+    complejo: 'Gimnasio Cerrado', superficie: 'parquet',
+    techado: true, iluminacion: true, capacidad: 30, precioPorHora: 15000,
+    coordenadas: { latitud: -31.8602, longitud: -59.0151 },
+    imagenes: [], videoUrl: null,
+    reglas: 'Calzado deportivo limpio. Se usa para varias actividades.', activo: true,
+  },
+  {
+    id: 'esp-07', nombre: 'Cancha de Vóley 1', deporteId: 'dep-voley',
+    complejo: 'Polideportivo Municipal', superficie: 'cemento',
+    techado: false, iluminacion: true, capacidad: 12, precioPorHora: 7000,
+    coordenadas: { latitud: -31.8646, longitud: -59.0286 },
+    imagenes: [], videoUrl: null,
+    reglas: 'Calzado deportivo. No se permite el ingreso de mascotas.', activo: true,
+  },
+  {
+    id: 'esp-08', nombre: 'Cancha de Vóley 2', deporteId: 'dep-voley',
+    complejo: 'Polideportivo Municipal', superficie: 'cemento',
+    techado: false, iluminacion: false, capacidad: 12, precioPorHora: 7000,
+    coordenadas: { latitud: -31.8647, longitud: -59.0288 },
+    imagenes: [], videoUrl: null,
+    reglas: 'Calzado deportivo. No se permite el ingreso de mascotas.', activo: true,
+  },
 ];

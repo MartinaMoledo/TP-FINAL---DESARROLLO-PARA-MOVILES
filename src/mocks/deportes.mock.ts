@@ -6,4 +6,5 @@ export const DEPORTES_MOCK: Deporte[] = [
   { id: 'dep-basquet', nombre: 'Básquet', icono: 'basketball-outline', color: '#E65100' },
   { id: 'dep-voley', nombre: 'Vóley', icono: 'tennisball-outline', color: '#1565C0' },
   { id: 'dep-tenis', nombre: 'Tenis', icono: 'tennisball-outline', color: '#6A1B9A' },
+  { id: 'dep-gimnasio', nombre: 'Gimnasio', icono: 'barbell-outline', color: '#37474F' },
 ];

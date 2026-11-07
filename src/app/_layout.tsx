@@ -1,12 +1,20 @@
 import { useEffect } from 'react';
+import { useFonts } from 'expo-font';
 import { ActivityIndicator, View } from 'react-native';
 import { router, Stack, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 
 import { esPersonal, ProveedorSesion, useSesion } from '@/contextos/SesionContexto';
+import { restaurarModo } from '@/tema/modo';
+import { FUENTES } from '@/tema/tipografia';
 import { useTema } from '@/tema/useTema';
 
 export default function LayoutRaiz() {
+  // Vuelve a poner el modo claro/oscuro que se eligió la última vez.
+  useEffect(() => {
+    restaurarModo();
+  }, []);
+
   return (
     <ProveedorSesion>
       <Raiz />
@@ -18,6 +26,8 @@ function Raiz() {
   const t = useTema();
   const { usuario, cargando } = useSesion();
   const segmentos = useSegments();
+  // Tipografía Raleway. Si fallara la carga, la app sigue con la fuente del sistema.
+  const [fuentesListas, errorFuentes] = useFonts(FUENTES);
 
   useEffect(() => {
     if (cargando) return;
@@ -50,7 +60,7 @@ function Raiz() {
     }
   }, [cargando, usuario, segmentos]);
 
-  if (cargando) {
+  if (cargando || (!fuentesListas && !errorFuentes)) {
     return (
       <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: t.fondo }}>
         <StatusBar style="auto" />
