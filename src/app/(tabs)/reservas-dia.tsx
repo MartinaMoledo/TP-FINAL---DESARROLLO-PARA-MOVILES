@@ -19,6 +19,7 @@ import { Tarjeta } from '@/components/Tarjeta';
 import { useCargar } from '@/hooks/useCargar';
 import { ErrorApi } from '@/servicios/cliente';
 import { personalServicio, type ReservaDelDia } from '@/servicios/personal';
+import { fuente } from '@/tema/tipografia';
 import { tamanos, useTema } from '@/tema/useTema';
 import { hoyISO } from '@/utilidades/fechas';
 
@@ -139,7 +140,7 @@ export default function ReservasDelDiaPantalla() {
 const estilos = StyleSheet.create({
   pantalla: { flex: 1 },
   lista: { padding: 16, paddingTop: 0, gap: 12 },
-  resumen: { fontSize: 15, marginBottom: 4 },
+  resumen: { fontSize: 15, marginBottom: 4, fontFamily: fuente.regular },
   tarjeta: { gap: 6 },
   filaSuperior: {
     flexDirection: 'row',
@@ -147,9 +148,9 @@ const estilos = StyleSheet.create({
     justifyContent: 'space-between',
     gap: 10,
   },
-  horario: { fontSize: tamanos.texto, fontWeight: '800' },
-  espacio: { fontSize: tamanos.texto, fontWeight: '700' },
-  texto: { fontSize: 15 },
-  telefono: { fontSize: 15, fontWeight: '700' },
+  horario: { fontSize: tamanos.texto, fontFamily: fuente.negrita },
+  espacio: { fontSize: tamanos.texto, fontFamily: fuente.seminegrita },
+  texto: { fontSize: 15, fontFamily: fuente.regular },
+  telefono: { fontSize: 15, fontFamily: fuente.seminegrita },
   boton: { marginTop: 8, minHeight: 48 },
 });

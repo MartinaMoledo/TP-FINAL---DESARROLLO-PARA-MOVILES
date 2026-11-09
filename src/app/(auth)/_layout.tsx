@@ -1,6 +1,7 @@
 import { Stack } from 'expo-router';
 
 import { useSesion } from '@/contextos/SesionContexto';
+import { fuente } from '@/tema/tipografia';
 import { useTema } from '@/tema/useTema';
 
 export default function LayoutIngreso() {
@@ -15,6 +16,8 @@ export default function LayoutIngreso() {
       screenOptions={{
         headerStyle: { backgroundColor: t.tarjeta },
         headerTintColor: t.texto,
+        headerTitleStyle: { fontFamily: fuente.seminegrita },
+        headerBackTitleStyle: { fontFamily: fuente.media },
         contentStyle: { backgroundColor: t.fondo },
         headerBackTitle: 'Volver',
       }}

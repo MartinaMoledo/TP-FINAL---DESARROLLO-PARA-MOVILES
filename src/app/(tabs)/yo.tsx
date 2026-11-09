@@ -12,6 +12,7 @@ import { Boton } from '@/components/Boton';
 import { Etiqueta } from '@/components/Etiqueta';
 import { Tarjeta } from '@/components/Tarjeta';
 import { esPersonal, useSesion } from '@/contextos/SesionContexto';
+import { fuente } from '@/tema/tipografia';
 import { tamanos, useTema } from '@/tema/useTema';
 import type { Rol } from '@/tipos';
 
@@ -152,12 +153,12 @@ const estilos = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  inicial: { fontSize: 34, fontWeight: '800' },
-  titulo: { fontSize: 30, fontWeight: '800', textAlign: 'center' },
-  subtitulo: { fontSize: tamanos.texto, fontWeight: '800' },
-  texto: { fontSize: tamanos.texto, lineHeight: 23 },
+  inicial: { fontSize: 34, fontFamily: fuente.negrita },
+  titulo: { fontSize: 30, fontFamily: fuente.negrita, textAlign: 'center' },
+  subtitulo: { fontSize: tamanos.texto, fontFamily: fuente.negrita },
+  texto: { fontSize: tamanos.texto, lineHeight: 23, fontFamily: fuente.regular },
   tarjeta: { gap: 12 },
   dato: { gap: 2 },
-  etiquetaDato: { fontSize: 14, fontWeight: '600' },
-  valorDato: { fontSize: tamanos.texto, fontWeight: '600' },
+  etiquetaDato: { fontSize: 14, fontFamily: fuente.media },
+  valorDato: { fontSize: tamanos.texto, fontFamily: fuente.media },
 });

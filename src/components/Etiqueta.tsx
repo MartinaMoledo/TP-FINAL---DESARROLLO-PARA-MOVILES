@@ -1,6 +1,7 @@
 // Etiquetas de estado: libres, reservados, fijos, mantenimiento y avisos.
 import { StyleSheet, Text, View } from 'react-native';
 
+import { fuente } from '@/tema/tipografia';
 import { useTema } from '@/tema/useTema';
 import type { EstadoReserva, EstadoTurno } from '@/tipos';
 
@@ -90,6 +91,6 @@ const estilos = StyleSheet.create({
   },
   texto: {
     fontSize: 13,
-    fontWeight: '700',
+    fontFamily: fuente.seminegrita,
   },
 });

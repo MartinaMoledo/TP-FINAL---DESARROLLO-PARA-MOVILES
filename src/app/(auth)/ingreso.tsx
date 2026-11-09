@@ -15,6 +15,7 @@ import { CampoTexto } from '@/components/CampoTexto';
 import { Tarjeta } from '@/components/Tarjeta';
 import { useSesion } from '@/contextos/SesionContexto';
 import { ErrorApi } from '@/servicios/cliente';
+import { fuente } from '@/tema/tipografia';
 import { tamanos, useTema } from '@/tema/useTema';
 
 export default function IngresoPantalla() {
@@ -96,7 +97,7 @@ export default function IngresoPantalla() {
         <Tarjeta style={estilos.demo}>
           <Text style={[estilos.demoTitulo, { color: t.texto }]}>Cuentas de prueba</Text>
           <Text style={[estilos.texto, { color: t.textoSuave }]}>
-            Contraseña: <Text style={{ fontWeight: '700' }}>villaguay2026</Text>
+            Contraseña: <Text style={{ fontFamily: fuente.negrita }}>villaguay2026</Text>
           </Text>
           <View style={estilos.fila}>
             <Boton
@@ -134,14 +135,14 @@ const estilos = StyleSheet.create({
   pantalla: { flex: 1 },
   contenido: { padding: 20, paddingBottom: 40, gap: 16 },
   encabezado: { gap: 6, marginTop: 8 },
-  titulo: { fontSize: 30, fontWeight: '800' },
-  texto: { fontSize: tamanos.texto, lineHeight: 23 },
+  titulo: { fontSize: 30, fontFamily: fuente.negrita },
+  texto: { fontSize: tamanos.texto, lineHeight: 23, fontFamily: fuente.regular },
   formulario: { gap: 14 },
   demo: { gap: 10 },
-  demoTitulo: { fontSize: tamanos.texto, fontWeight: '800' },
+  demoTitulo: { fontSize: tamanos.texto, fontFamily: fuente.negrita },
   fila: { flexDirection: 'row', gap: 10 },
   botonDemo: { flex: 1, minHeight: 48 },
-  error: { fontSize: 14, fontWeight: '600' },
+  error: { fontSize: 14, fontFamily: fuente.seminegrita },
   enlace: { paddingVertical: 6 },
-  enlaceTexto: { fontSize: tamanos.texto, fontWeight: '700', textAlign: 'center' },
+  enlaceTexto: { fontSize: tamanos.texto, fontFamily: fuente.negrita, textAlign: 'center' },
 });

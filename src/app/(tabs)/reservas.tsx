@@ -20,6 +20,7 @@ import { esPersonal, useSesion } from '@/contextos/SesionContexto';
 import { useCargar } from '@/hooks/useCargar';
 import { ErrorApi } from '@/servicios/cliente';
 import { reservasServicio, type Momento } from '@/servicios/reservas';
+import { fuente } from '@/tema/tipografia';
 import { tamanos, useTema } from '@/tema/useTema';
 
 export default function ReservasPantalla() {
@@ -131,7 +132,7 @@ function ListaReservas() {
               <Text
                 style={{
                   color: activo ? t.sobrePrimario : t.texto,
-                  fontWeight: '700',
+                  fontFamily: fuente.seminegrita,
                 }}
               >
                 {opcion === 'proximas' ? 'Próximas' : 'Pasadas'}
@@ -204,9 +205,9 @@ const estilos = StyleSheet.create({
   pantalla: { flex: 1 },
   centro: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24, gap: 16 },
   contenido: { padding: 20, paddingBottom: 40, gap: 16 },
-  titulo: { fontSize: 30, fontWeight: '800', marginTop: 8 },
-  subtitulo: { fontSize: tamanos.texto, fontWeight: '800' },
-  texto: { fontSize: tamanos.texto, lineHeight: 23 },
+  titulo: { fontSize: 30, fontFamily: fuente.negrita, marginTop: 8 },
+  subtitulo: { fontSize: tamanos.texto, fontFamily: fuente.negrita },
+  texto: { fontSize: tamanos.texto, lineHeight: 23, fontFamily: fuente.regular },
   tarjeta: { gap: 10 },
   filtros: {
     flexDirection: 'row',

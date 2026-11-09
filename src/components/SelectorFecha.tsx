@@ -2,8 +2,9 @@
 import { useMemo } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text } from 'react-native';
 
-import { diasDeLaSemana, hoyISO, sumarDias } from '@/utilidades/fechas';
+import { fuente } from '@/tema/tipografia';
 import { useTema } from '@/tema/useTema';
+import { diasDeLaSemana, hoyISO, sumarDias } from '@/utilidades/fechas';
 
 type Props = {
   fecha: string;
@@ -53,7 +54,7 @@ export function SelectorFecha({ fecha, onCambiar, dias = 7 }: Props) {
             <Text
               style={{
                 color: activo ? t.sobrePrimario : t.texto,
-                fontWeight: '700',
+                fontFamily: fuente.seminegrita,
                 fontSize: 14,
               }}
             >

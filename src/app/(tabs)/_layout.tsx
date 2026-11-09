@@ -2,6 +2,7 @@
 import { Tabs } from 'expo-router';
 
 import { esPersonal, useSesion } from '@/contextos/SesionContexto';
+import { fuente } from '@/tema/tipografia';
 import { useTema } from '@/tema/useTema';
 
 export default function LayoutPestanas() {
@@ -14,13 +15,14 @@ export default function LayoutPestanas() {
       screenOptions={{
         headerStyle: { backgroundColor: t.tarjeta },
         headerTintColor: t.texto,
+        headerTitleStyle: { fontFamily: fuente.seminegrita },
         // Sin `height` fijo: en Android edge-to-edge la barra del sistema se superpone
         // y una altura fija deja las etiquetas tapadas (parece que no hay pestañas).
         // react-navigation ya calcula la altura sumando el área segura.
         tabBarStyle: { backgroundColor: t.tarjeta, borderTopColor: t.borde },
         tabBarActiveTintColor: t.primario,
         tabBarInactiveTintColor: t.textoSuave,
-        tabBarLabelStyle: { fontSize: 15, fontWeight: '600' },
+        tabBarLabelStyle: { fontSize: 15, fontFamily: fuente.media },
         tabBarIconStyle: { display: 'none' },
       }}
     >

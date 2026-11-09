@@ -41,13 +41,6 @@
       ],
       "expo-secure-store",
       [
-        "expo-maps",
-        {
-          "requestLocationPermission": true,
-          "locationPermission": "Permití que Reservas Deportivas use tu ubicación para mostrarte los complejos cercanos."
-        }
-      ],
-      [
         "expo-camera",
         {
           "cameraPermission": "Permití que Reservas Deportivas use la cámara para escanear el código QR de las reservas.",

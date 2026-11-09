@@ -7,6 +7,7 @@ import { Etiqueta, etiquetaDeTurno } from '@/components/Etiqueta';
 import { SelectorFecha } from '@/components/SelectorFecha';
 import { useCargar } from '@/hooks/useCargar';
 import { personalServicio } from '@/servicios/personal';
+import { fuente } from '@/tema/tipografia';
 import { tamanos, useTema } from '@/tema/useTema';
 import type { Espacio, Turno } from '@/tipos';
 import { hoyISO } from '@/utilidades/fechas';
@@ -106,11 +107,11 @@ export default function AgendaPantalla() {
 const estilos = StyleSheet.create({
   pantalla: { flex: 1 },
   resumen: { paddingHorizontal: 16, paddingBottom: 8, gap: 2 },
-  titulo: { fontSize: tamanos.titulo, fontWeight: '800' },
-  detalle: { fontSize: 15 },
+  titulo: { fontSize: tamanos.titulo, fontFamily: fuente.negrita },
+  detalle: { fontSize: 15, fontFamily: fuente.regular },
   lista: { paddingHorizontal: 16, paddingBottom: 24 },
   encabezadoSeccion: { paddingTop: 18, paddingBottom: 8, gap: 2 },
-  espacio: { fontSize: tamanos.texto, fontWeight: '800' },
+  espacio: { fontSize: tamanos.texto, fontFamily: fuente.negrita },
   fila: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -122,5 +123,5 @@ const estilos = StyleSheet.create({
     marginBottom: 8,
   },
   horario: { flexDirection: 'row', alignItems: 'baseline', gap: 6 },
-  hora: { fontSize: tamanos.texto, fontWeight: '700' },
+  hora: { fontSize: tamanos.texto, fontFamily: fuente.seminegrita },
 });

@@ -6,7 +6,7 @@ import { StatusBar } from 'expo-status-bar';
 
 import { esPersonal, ProveedorSesion, useSesion } from '@/contextos/SesionContexto';
 import { restaurarModo } from '@/tema/modo';
-import { FUENTES } from '@/tema/tipografia';
+import { fuente, FUENTES } from '@/tema/tipografia';
 import { useTema } from '@/tema/useTema';
 
 export default function LayoutRaiz() {
@@ -77,6 +77,7 @@ function Raiz() {
         screenOptions={{
           headerStyle: { backgroundColor: t.tarjeta },
           headerTintColor: t.texto,
+          headerTitleStyle: { fontFamily: fuente.seminegrita },
           contentStyle: { backgroundColor: t.fondo },
         }}
       >

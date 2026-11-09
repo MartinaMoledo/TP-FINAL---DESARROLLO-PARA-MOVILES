@@ -9,6 +9,7 @@ import {
   type ViewStyle,
 } from 'react-native';
 
+import { fuente } from '@/tema/tipografia';
 import { tamanos, useTema } from '@/tema/useTema';
 
 export type VarianteBoton = 'primario' | 'secundario' | 'peligro' | 'fantasma';
@@ -83,6 +84,6 @@ const estilos = StyleSheet.create({
   },
   texto: {
     fontSize: tamanos.texto,
-    fontWeight: '700',
+    fontFamily: fuente.negrita,
   },
 });

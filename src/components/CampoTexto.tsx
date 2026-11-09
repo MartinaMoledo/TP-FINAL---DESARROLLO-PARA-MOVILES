@@ -8,6 +8,7 @@ import {
   type TextInputProps,
 } from 'react-native';
 
+import { fuente } from '@/tema/tipografia';
 import { tamanos, useTema } from '@/tema/useTema';
 
 type Props = TextInputProps & {
@@ -62,7 +63,7 @@ const estilos = StyleSheet.create({
   },
   etiqueta: {
     fontSize: 15,
-    fontWeight: '700',
+    fontFamily: fuente.seminegrita,
   },
   entrada: {
     minHeight: 52,
@@ -70,8 +71,10 @@ const estilos = StyleSheet.create({
     borderRadius: 12,
     paddingHorizontal: 14,
     fontSize: tamanos.texto,
+    fontFamily: fuente.regular,
   },
   mensaje: {
     fontSize: 13,
+    fontFamily: fuente.regular,
   },
 });
