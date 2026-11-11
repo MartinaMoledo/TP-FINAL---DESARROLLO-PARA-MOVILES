@@ -5,6 +5,7 @@ import { USUARIO_MOCK } from "@/mocks/usuario.mock";
 import { ErrorApi, pedirUno, USAR_MOCKS } from "./cliente";
 import { borrarToken, guardarToken, leerToken } from "./sesion";
 import Storage from "expo-sqlite/kv-store";
+import { borrarClaveApp } from "./bloqueo";
 
 export type DatosRegistro = {
   nombre: string;
@@ -68,6 +69,7 @@ export const authServicio = {
       cuerpo: datos,
     });
     await guardarToken(sesion.token);
+    await guardarUsuario(sesion.usuario);
     return sesion;
   },
 
@@ -91,9 +93,9 @@ export const authServicio = {
       if (error instanceof ErrorApi && error.codigo === 'SIN_CONEXION') {
         return leerUsuarioGuardado();
       }
-      // Si el token venció o la base se reinició, no lo dejamos guardado.
       if (error instanceof ErrorApi && error.estado === 401) {
         await borrarToken();
+        await borrarClaveApp();
         await Storage.removeItemAsync(CLAVE_USUARIO);
       }
       throw error;
@@ -101,7 +103,8 @@ export const authServicio = {
   },
 
   async salir(): Promise<void> {
-  await borrarToken();
-  await Storage.removeItemAsync(CLAVE_USUARIO);
-},
+    await borrarToken();
+    await borrarClaveApp();
+    await Storage.removeItemAsync(CLAVE_USUARIO);
+  },
 };

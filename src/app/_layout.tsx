@@ -1,9 +1,10 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useFonts } from 'expo-font';
 import { ActivityIndicator, View } from 'react-native';
 import { router, Stack, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { AvisoDeRed } from '@/components/AvisoDeRed';
+import { PantallaBloqueo } from '@/components/PantallaBloqueo';
 import { esPersonal, ProveedorSesion, useSesion } from '@/contextos/SesionContexto';
 import { restaurarModo } from '@/tema/modo';
 import { fuente, FUENTES } from '@/tema/tipografia';
@@ -28,7 +29,11 @@ function Raiz() {
   const segmentos = useSegments();
   // Tipografía Raleway. Si fallara la carga, la app sigue con la fuente del sistema.
   const [fuentesListas, errorFuentes] = useFonts(FUENTES);
+  const [bloqueada, setBloqueada] = useState(true);
 
+  useEffect(() => {
+    if (!cargando && !usuario) setBloqueada(false);
+  }, [cargando, usuario]);
   useEffect(() => {
     if (cargando) return;
 
@@ -70,10 +75,11 @@ function Raiz() {
   }
 
   return (
+  <View style={{ flex: 1 }}>
+    {/* `auto` cambia los íconos de la barra de estado según el tema del sistema. */}
+    <StatusBar style="auto" />
+    <AvisoDeRed />
     <View style={{ flex: 1 }}>
-      {/* `auto` cambia los íconos de la barra de estado según el tema del sistema. */}
-      <StatusBar style="auto" />
-      <AvisoDeRed />
       <Stack
         screenOptions={{
           headerStyle: { backgroundColor: t.tarjeta },
@@ -86,6 +92,9 @@ function Raiz() {
         <Stack.Screen name="(auth)" options={{ headerShown: false }} />
         <Stack.Screen name="espacio/[id]" options={{ title: 'Espacio' }} />
       </Stack>
+      {/* Tapa toda la app hasta que la persona confirme que es ella. */}
+      {usuario && bloqueada && <PantallaBloqueo alDesbloquear={() => setBloqueada(false)} />}
     </View>
-  );
+  </View>
+);
 }
