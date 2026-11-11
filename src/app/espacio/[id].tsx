@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useLocalSearchParams } from 'expo-router';
 import {
@@ -14,9 +13,11 @@ import { EstadoPantalla } from '@/components/EstadoPantalla';
 import { useCargar } from '@/hooks/useCargar';
 import { espaciosServicio } from '@/servicios/espacios';
 import { tamanos, useTema } from '@/tema/useTema';
-import { hoyISO } from '@/utilidades/fechas';
+import { aISOArgentina, hoyISO } from '@/utilidades/fechas';
 import { Alert } from 'react-native';
 import { reservasServicio } from '@/servicios/reservas';
+import { programarRecordatorio } from '@/servicios/notificaciones';
+import type { Turno } from '@/tipos';
 
 function sumarDias(fecha: string, dias: number) {
   const [anio, mes, dia] = fecha.split('-').map(Number);
@@ -52,25 +53,30 @@ export default function EspacioPantalla() {
     mantenimiento: 'MANTENIMIENTO',
   };
 
-  const fechas = Array.from(
-    { length: 7 },
-    (_, i) => sumarDias(hoyISO(), i)
-  );
+  const fechas = Array.from({ length: 7 }, (_, i) => sumarDias(hoyISO(), i));
 
-  const reservarTurno = (turnoId: string) => {
+  const reservarTurno = (turno: Turno) => {
     Alert.alert('Confirmar reserva', '¿Querés reservar este turno?', [
       { text: 'Cancelar', style: 'cancel' },
       {
         text: 'Reservar',
         onPress: async () => {
           try {
-            await reservasServicio.reservar(turnoId, cantidadPersonas);
+            const reserva = await reservasServicio.reservar(
+              turno.id,
+              cantidadPersonas,
+            );
+            await programarRecordatorio({
+              reservaId: reserva.id,
+              inicio: aISOArgentina(turno.fecha, turno.inicio),
+              nombreEspacio: datos?.espacio.nombre ?? 'Tu cancha',
+            });
             Alert.alert('¡Reserva confirmada!', 'Tu turno fue reservado.');
             recargar();
           } catch (e) {
             Alert.alert(
               'No se pudo reservar',
-              e instanceof Error ? e.message : 'Ocurrió un error.'
+              e instanceof Error ? e.message : 'Ocurrió un error.',
             );
           }
         },
@@ -154,7 +160,7 @@ export default function EspacioPantalla() {
               <Pressable
                 onPress={() =>
                   setCantidadPersonas((n) =>
-                    Math.min(datos.espacio.capacidad, n + 1)
+                    Math.min(datos.espacio.capacidad, n + 1),
                   )
                 }
                 style={[estilos.botonCantidad, { backgroundColor: t.tarjeta }]}
@@ -179,10 +185,12 @@ export default function EspacioPantalla() {
                     },
                   ]}
                 >
-                  <Text style={{
-                    color: fecha === dia ? '#FFFFFF' : t.texto,
-                    fontWeight: '600',
-                  }}>
+                  <Text
+                    style={{
+                      color: fecha === dia ? '#FFFFFF' : t.texto,
+                      fontWeight: '600',
+                    }}
+                  >
                     {dia.slice(8, 10)}/{dia.slice(5, 7)}
                   </Text>
                 </Pressable>
@@ -208,20 +216,18 @@ export default function EspacioPantalla() {
                   {turno.inicio}
                 </Text>
 
-                <Text style={[
-                  estilos.estado,
-                  { color: colores[turno.estado] },
-                ]}>
+                <Text
+                  style={[estilos.estado, { color: colores[turno.estado] }]}
+                >
                   {etiquetas[turno.estado]}
-                  {turno.motivoBloqueo
-                    ? ` — ${turno.motivoBloqueo}`
-                    : ''}
+                  {turno.motivoBloqueo ? ` — ${turno.motivoBloqueo}` : ''}
                 </Text>
 
                 {turno.estado === 'libre' &&
-                  new Date(`${fecha}T${turno.inicio}:00-03:00`).getTime() > Date.now() && (
+                  new Date(`${fecha}T${turno.inicio}:00-03:00`).getTime() >
+                    Date.now() && (
                     <Pressable
-                      onPress={() => reservarTurno(turno.id)}
+                      onPress={() => reservarTurno(turno)}
                       style={estilos.botonReservar}
                     >
                       <Text style={{ color: '#FFFFFF', fontWeight: '700' }}>
@@ -266,21 +272,21 @@ const estilos = StyleSheet.create({
   hora: { fontSize: tamanos.texto, fontWeight: '700', width: 64 },
   estado: { fontSize: tamanos.texto, fontWeight: '600', flexShrink: 1 },
   botonReservar: {
-  backgroundColor: '#D71920',
-  paddingHorizontal: 12,
-  paddingVertical: 8,
-  borderRadius: 8,
+    backgroundColor: '#D71920',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
   },
   selectorPersonas: {
-  flexDirection: 'row',
-  alignItems: 'center',
-  gap: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 20,
   },
   botonCantidad: {
-  width: 44,
-  height: 44,
-  borderRadius: 10,
-  alignItems: 'center',
-  justifyContent: 'center',
+    width: 44,
+    height: 44,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
