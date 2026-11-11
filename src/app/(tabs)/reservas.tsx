@@ -19,6 +19,7 @@ import { Tarjeta } from '@/components/Tarjeta';
 import { esPersonal, useSesion } from '@/contextos/SesionContexto';
 import { useCargar } from '@/hooks/useCargar';
 import { ErrorApi } from '@/servicios/cliente';
+import { cancelarRecordatorio } from '@/servicios/notificaciones';  
 import { reservasServicio, type Momento } from '@/servicios/reservas';
 import { fuente } from '@/tema/tipografia';
 import { tamanos, useTema } from '@/tema/useTema';
@@ -105,6 +106,7 @@ function ListaReservas() {
           onPress: async () => {
             try {
               await reservasServicio.cancelar(reservaId);
+              await cancelarRecordatorio(reservaId);
               Alert.alert('Reserva cancelada', 'Tu turno fue liberado.');
               recargar();
             } catch (e) {

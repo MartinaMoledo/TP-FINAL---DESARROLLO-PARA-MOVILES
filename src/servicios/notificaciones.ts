@@ -55,7 +55,7 @@ export async function programarRecordatorio({
   const hayPermiso = await pedirPermisoNotificaciones();
   if (!hayPermiso) return;
 
-  // si ya habia una reserva se reprograma sin eliminar la duplicada
+ // si ya había un recordatorio para esta reserva, se cancela antes - reprogramar sin cancelar duplica
   await cancelarRecordatorio(reservaId);
 
   const hora = inicio.slice(11, 16);
@@ -63,7 +63,7 @@ export async function programarRecordatorio({
   const id = await Notifications.scheduleNotificationAsync({
     content: {
       title: 'Tu turno es en 2 horas',
-      body: `${nombreEspacio} a las ${hora}. Se paga allí.`,
+      body: `${nombreEspacio} a las ${hora}. Recordá que abonás en el lugar!`,
       data: { ruta: '/(tabs)/reservas', reservaId },
     },
     trigger: {
