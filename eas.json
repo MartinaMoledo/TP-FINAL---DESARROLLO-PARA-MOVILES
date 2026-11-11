@@ -6,6 +6,7 @@
   "build": {
     "rehearsal": {
       "distribution": "internal",
+      "environment": "development",
       "android": { "buildType": "apk" },
       "env": {
         "EXPO_PUBLIC_USAR_MOCKS": "true"
@@ -17,6 +18,7 @@
     },
     "preview": {
       "distribution": "internal",
+      "environment": "preview",
       "android": { "buildType": "apk" },
       "env": {
         "EXPO_PUBLIC_API_URL": "https://REEMPLAZAR-con-la-url-publica-de-la-api",
@@ -24,6 +26,7 @@
       }
     },
     "production": {
+      "environment": "production",
       "env": {
         "EXPO_PUBLIC_API_URL": "https://REEMPLAZAR-con-la-url-publica-de-la-api",
         "EXPO_PUBLIC_USAR_MOCKS": "false"
