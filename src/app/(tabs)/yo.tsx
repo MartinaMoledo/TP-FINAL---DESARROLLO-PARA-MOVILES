@@ -127,8 +127,9 @@ export default function YoPantalla() {
         <Tarjeta style={estilos.tarjeta}>
           <Text style={[estilos.subtitulo, { color: t.texto }]}>Zona del personal</Text>
           <Text style={[estilos.texto, { color: t.textoSuave }]}>
-            Desde las pestañas podés ver la agenda, las reservas del día con los teléfonos
-            y registrar ingresos escaneando el QR.
+            Desde las pestañas podés ver la agenda, las reservas del día con los teléfonos,
+            registrar ingresos escaneando el QR y usar el panel para bloquear turnos, cargar
+            reservas fijas y cambiar precios.
           </Text>
           <Boton
             titulo="Ir a la agenda"

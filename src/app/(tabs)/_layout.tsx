@@ -65,6 +65,14 @@ export default function LayoutPestanas() {
           href: personal ? undefined : null,
         }}
       />
+      <Tabs.Screen
+        name="panel"
+        options={{
+          title: 'Panel del personal',
+          tabBarLabel: 'Panel',
+          href: personal ? undefined : null,
+        }}
+      />
 
       <Tabs.Screen name="yo" options={{ title: 'Yo' }} />
     </Tabs>

@@ -51,10 +51,10 @@ function Raiz() {
       return;
     }
 
-    // Jugadores y anónimos no entran a agenda, reservas del día ni escaneo.
+    // Jugadores y anónimos no entran a agenda, reservas del día, escaneo ni panel.
+    const pantallasDelPersonal = ['agenda', 'reservas-dia', 'escanear', 'panel'];
     const zonaPersonal =
-      grupo === '(tabs)' &&
-      (pantalla === 'agenda' || pantalla === 'reservas-dia' || pantalla === 'escanear');
+      grupo === '(tabs)' && pantalla !== undefined && pantallasDelPersonal.includes(pantalla);
     if (zonaPersonal) {
       router.replace(usuario ? '/(tabs)' : '/(auth)/ingreso');
     }
