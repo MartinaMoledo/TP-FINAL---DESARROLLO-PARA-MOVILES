@@ -3,7 +3,7 @@ import { useFonts } from 'expo-font';
 import { ActivityIndicator, View } from 'react-native';
 import { router, Stack, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-
+import { AvisoDeRed } from '@/components/AvisoDeRed';
 import { esPersonal, ProveedorSesion, useSesion } from '@/contextos/SesionContexto';
 import { restaurarModo } from '@/tema/modo';
 import { fuente, FUENTES } from '@/tema/tipografia';
@@ -33,7 +33,7 @@ function Raiz() {
     if (cargando) return;
 
     const grupo = segmentos[0];
-    const pantalla = segmentos[1];
+    const pantalla = segmentos.length > 1 ? [...segmentos][1] : undefined;
     const enAuth = grupo === '(auth)';
 
     // Con sesión abierta no tiene sentido quedarse en las pantallas de ingreso.
@@ -70,9 +70,10 @@ function Raiz() {
   }
 
   return (
-    <>
+    <View style={{ flex: 1 }}>
       {/* `auto` cambia los íconos de la barra de estado según el tema del sistema. */}
       <StatusBar style="auto" />
+      <AvisoDeRed />
       <Stack
         screenOptions={{
           headerStyle: { backgroundColor: t.tarjeta },
@@ -85,6 +86,6 @@ function Raiz() {
         <Stack.Screen name="(auth)" options={{ headerShown: false }} />
         <Stack.Screen name="espacio/[id]" options={{ title: 'Espacio' }} />
       </Stack>
-    </>
+    </View>
   );
 }
