@@ -14,7 +14,6 @@ import { revisarAvisos } from '@/servicios/avisos';
 import { restaurarModo } from '@/tema/modo';
 import { fuente, FUENTES } from '@/tema/tipografia';
 import { useTema } from '@/tema/useTema';
-import { reservasServicio } from '@/servicios/reservas';
 
 export default function LayoutRaiz() {
   // Vuelve a poner el modo claro/oscuro que se eligió la última vez.
@@ -37,9 +36,9 @@ function Raiz() {
   const [fuentesListas, errorFuentes] = useFonts(FUENTES);
   const [bloqueada, setBloqueada] = useState(true);
 
-  useEffect(() => {
-    if (!cargando && !usuario) setBloqueada(false);
-  }, [cargando, usuario]);
+  // Sin sesión no hay nada que bloquear. Se ajusta en el mismo render, como
+  // recomienda React, para no disparar un efecto que vuelva a renderizar.
+  if (!cargando && !usuario && bloqueada) setBloqueada(false);
 
   useEffect(() => {
     if (usuario) void revisarAvisos(usuario);

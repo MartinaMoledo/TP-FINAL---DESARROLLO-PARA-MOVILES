@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useLocalSearchParams } from 'expo-router';
 import {
+  Alert,
   Image,
   Pressable,
   ScrollView,
@@ -14,7 +15,6 @@ import { useCargar } from '@/hooks/useCargar';
 import { espaciosServicio } from '@/servicios/espacios';
 import { tamanos, useTema } from '@/tema/useTema';
 import { aISOArgentina, hoyISO } from '@/utilidades/fechas';
-import { Alert } from 'react-native';
 import { reservasServicio } from '@/servicios/reservas';
 import { programarRecordatorio } from '@/servicios/notificaciones';
 import type { Turno } from '@/tipos';
@@ -30,6 +30,13 @@ export default function EspacioPantalla() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const [fecha, setFecha] = useState(hoyISO);
   const [cantidadPersonas, setCantidadPersonas] = useState(1);
+  // El reloj se lee fuera del render y se refresca solo, para que el botón
+  // "Reservar" desaparezca cuando el turno ya empezó.
+  const [ahora, setAhora] = useState(() => Date.now());
+  useEffect(() => {
+    const temporizador = setInterval(() => setAhora(Date.now()), 60_000);
+    return () => clearInterval(temporizador);
+  }, []);
 
   const { datos, cargando, error, recargar } = useCargar(async () => {
     const [espacio, turnos] = await Promise.all([
@@ -225,7 +232,7 @@ export default function EspacioPantalla() {
 
                 {turno.estado === 'libre' &&
                   new Date(`${fecha}T${turno.inicio}:00-03:00`).getTime() >
-                    Date.now() && (
+                    ahora && (
                     <Pressable
                       onPress={() => reservarTurno(turno)}
                       style={estilos.botonReservar}
