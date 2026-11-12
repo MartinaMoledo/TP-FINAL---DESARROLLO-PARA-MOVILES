@@ -55,7 +55,7 @@ export async function programarRecordatorio({
   const hayPermiso = await pedirPermisoNotificaciones();
   if (!hayPermiso) return;
 
- // si ya había un recordatorio para esta reserva, se cancela antes - reprogramar sin cancelar duplica
+  // si ya había un recordatorio para esta reserva, se cancela antes - reprogramar sin cancelar duplica
   await cancelarRecordatorio(reservaId);
 
   const hora = inicio.slice(11, 16);
@@ -77,10 +77,25 @@ export async function programarRecordatorio({
 }
 
 export async function cancelarRecordatorio(reservaId: string): Promise<void> {
-    const clave = claveRecordatorio(reservaId);
-    const id = await Storage.getItemAsync(clave);
-    if (!id) return;
+  const clave = claveRecordatorio(reservaId);
+  const id = await Storage.getItemAsync(clave);
+  if (!id) return;
 
-    await Notifications.cancelScheduledNotificationAsync(id);
-    await Storage.removeItemAsync(clave);
+  await Notifications.cancelScheduledNotificationAsync(id);
+  await Storage.removeItemAsync(clave);
 }
+
+// los avisos automaticos no piden permiso al abrir la app, se pide recien al reservar 
+export async function hayPermisoNotificaciones(): Promise<boolean> {
+  const { status } = await Notifications.getPermissionsAsync();
+  return status === 'granted';
+}
+
+
+export async function avisarAhora(titulo: string, cuerpo: string): Promise<void> {
+  await Notifications.scheduleNotificationAsync({
+    content: { title: titulo, body: cuerpo, data: { ruta: '/(tabs)/reservas' } },
+    trigger: { channelId: CANAL },
+  });
+}
+
