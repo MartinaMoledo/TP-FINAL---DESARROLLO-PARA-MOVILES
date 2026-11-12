@@ -5,10 +5,16 @@ import { router, Stack, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { AvisoDeRed } from '@/components/AvisoDeRed';
 import { PantallaBloqueo } from '@/components/PantallaBloqueo';
-import { esPersonal, ProveedorSesion, useSesion } from '@/contextos/SesionContexto';
+import {
+  esPersonal,
+  ProveedorSesion,
+  useSesion,
+} from '@/contextos/SesionContexto';
+import { revisarAvisos } from '@/servicios/avisos';
 import { restaurarModo } from '@/tema/modo';
 import { fuente, FUENTES } from '@/tema/tipografia';
 import { useTema } from '@/tema/useTema';
+import { reservasServicio } from '@/servicios/reservas';
 
 export default function LayoutRaiz() {
   // Vuelve a poner el modo claro/oscuro que se eligió la última vez.
@@ -34,6 +40,11 @@ function Raiz() {
   useEffect(() => {
     if (!cargando && !usuario) setBloqueada(false);
   }, [cargando, usuario]);
+
+  useEffect(() => {
+    if (usuario) void revisarAvisos(usuario);
+  }, [usuario]);
+
   useEffect(() => {
     if (cargando) return;
 
@@ -57,9 +68,16 @@ function Raiz() {
     }
 
     // Jugadores y anónimos no entran a agenda, reservas del día, escaneo ni panel.
-    const pantallasDelPersonal = ['agenda', 'reservas-dia', 'escanear', 'panel'];
+    const pantallasDelPersonal = [
+      'agenda',
+      'reservas-dia',
+      'escanear',
+      'panel',
+    ];
     const zonaPersonal =
-      grupo === '(tabs)' && pantalla !== undefined && pantallasDelPersonal.includes(pantalla);
+      grupo === '(tabs)' &&
+      pantalla !== undefined &&
+      pantallasDelPersonal.includes(pantalla);
     if (zonaPersonal) {
       router.replace(usuario ? '/(tabs)' : '/(auth)/ingreso');
     }
@@ -67,7 +85,14 @@ function Raiz() {
 
   if (cargando || (!fuentesListas && !errorFuentes)) {
     return (
-      <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: t.fondo }}>
+      <View
+        style={{
+          flex: 1,
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: t.fondo,
+        }}
+      >
         <StatusBar style="auto" />
         <ActivityIndicator size="large" color={t.primario} />
       </View>
@@ -75,26 +100,28 @@ function Raiz() {
   }
 
   return (
-  <View style={{ flex: 1 }}>
-    {/* `auto` cambia los íconos de la barra de estado según el tema del sistema. */}
-    <StatusBar style="auto" />
-    <AvisoDeRed />
     <View style={{ flex: 1 }}>
-      <Stack
-        screenOptions={{
-          headerStyle: { backgroundColor: t.tarjeta },
-          headerTintColor: t.texto,
-          headerTitleStyle: { fontFamily: fuente.seminegrita },
-          contentStyle: { backgroundColor: t.fondo },
-        }}
-      >
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-        <Stack.Screen name="espacio/[id]" options={{ title: 'Espacio' }} />
-      </Stack>
-      {/* Tapa toda la app hasta que la persona confirme que es ella. */}
-      {usuario && bloqueada && <PantallaBloqueo alDesbloquear={() => setBloqueada(false)} />}
+      {/* `auto` cambia los íconos de la barra de estado según el tema del sistema. */}
+      <StatusBar style="auto" />
+      <AvisoDeRed />
+      <View style={{ flex: 1 }}>
+        <Stack
+          screenOptions={{
+            headerStyle: { backgroundColor: t.tarjeta },
+            headerTintColor: t.texto,
+            headerTitleStyle: { fontFamily: fuente.seminegrita },
+            contentStyle: { backgroundColor: t.fondo },
+          }}
+        >
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+          <Stack.Screen name="espacio/[id]" options={{ title: 'Espacio' }} />
+        </Stack>
+        {/* Tapa toda la app hasta que la persona confirme que es ella. */}
+        {usuario && bloqueada && (
+          <PantallaBloqueo alDesbloquear={() => setBloqueada(false)} />
+        )}
+      </View>
     </View>
-  </View>
-);
+  );
 }
