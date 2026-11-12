@@ -45,7 +45,7 @@ async function pedir(ruta: string, opciones: Opciones = {}): Promise<{ datos: un
   }
 
   const control = new AbortController();
-  const temporizador = setTimeout(() => control.abort(), 15000);
+  const temporizador = setTimeout(() => control.abort(), 60000);
   let respuesta: Response;
   try {
     respuesta = await fetch(url, {
@@ -55,7 +55,11 @@ async function pedir(ruta: string, opciones: Opciones = {}): Promise<{ datos: un
       signal: control.signal,
     });
   } catch {
-    throw new ErrorApi('SIN_CONEXION', 'No pudimos conectarnos. Revisá tu conexión e intentá de nuevo.');
+    const mensaje = control.signal.aborted
+      ? 'El servidor está tardando en responder. Intentá de nuevo en unos momentos.'
+      : 'No pudimos conectarnos. Revisá tu conexión e intentá de nuevo.';
+
+    throw new ErrorApi('SIN_CONEXION', mensaje);
   } finally {
     clearTimeout(temporizador);
   }
