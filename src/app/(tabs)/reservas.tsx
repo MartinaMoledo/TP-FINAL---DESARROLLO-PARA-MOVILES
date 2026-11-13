@@ -10,16 +10,18 @@ import {
   Text,
   View,
 } from 'react-native';
-import QRCode from 'react-native-qrcode-svg';
 
 import { Boton } from '@/components/Boton';
+import { CodigoQr } from '@/components/CodigoQr';
 import { EstadoPantalla } from '@/components/EstadoPantalla';
 import { Etiqueta, etiquetaDeReserva } from '@/components/Etiqueta';
 import { Tarjeta } from '@/components/Tarjeta';
 import { esPersonal, useSesion } from '@/contextos/SesionContexto';
 import { useCargar } from '@/hooks/useCargar';
 import { ErrorApi } from '@/servicios/cliente';
+import { cancelarRecordatorio } from '@/servicios/notificaciones';  
 import { reservasServicio, type Momento } from '@/servicios/reservas';
+import { fuente } from '@/tema/tipografia';
 import { tamanos, useTema } from '@/tema/useTema';
 
 export default function ReservasPantalla() {
@@ -46,10 +48,13 @@ export default function ReservasPantalla() {
             Entrá para ver tus reservas
           </Text>
           <Text style={[estilos.texto, { color: t.textoSuave }]}>
-            Sin cuenta podés mirar la disponibilidad. Para reservar un turno y ver tu
-            código QR, ingresá o creá una cuenta.
+            Sin cuenta podés mirar la disponibilidad. Para reservar un turno y
+            ver tu código QR, ingresá o creá una cuenta.
           </Text>
-          <Boton titulo="Ingresar" onPress={() => router.push('/(auth)/ingreso')} />
+          <Boton
+            titulo="Ingresar"
+            onPress={() => router.push('/(auth)/ingreso')}
+          />
           <Boton
             titulo="Crear cuenta"
             variante="secundario"
@@ -63,10 +68,15 @@ export default function ReservasPantalla() {
   if (esPersonal(usuario)) {
     return (
       <View style={[estilos.centro, { backgroundColor: t.fondo }]}>
-        <Text style={[estilos.texto, { color: t.textoSuave, textAlign: 'center' }]}>
-          Las reservas del día están en la pestaña “Del día” de la zona del personal.
+        <Text
+          style={[estilos.texto, { color: t.textoSuave, textAlign: 'center' }]}
+        >
+          Las reservas del día están en la pestaña Agenda de la zona del personal.
         </Text>
-        <Boton titulo="Ir a la agenda" onPress={() => router.replace('/(tabs)/agenda')} />
+        <Boton
+          titulo="Ir a la agenda"
+          onPress={() => router.replace('/(tabs)/agenda')}
+        />
       </View>
     );
   }
@@ -80,7 +90,7 @@ function ListaReservas() {
 
   const { datos, cargando, error, recargar } = useCargar(
     () => reservasServicio.misReservas(momento),
-    [momento]
+    [momento],
   );
 
   function cancelarReserva(reservaId: string) {
@@ -95,17 +105,18 @@ function ListaReservas() {
           onPress: async () => {
             try {
               await reservasServicio.cancelar(reservaId);
+              await cancelarRecordatorio(reservaId);
               Alert.alert('Reserva cancelada', 'Tu turno fue liberado.');
               recargar();
             } catch (e) {
               Alert.alert(
                 'No se pudo cancelar',
-                e instanceof ErrorApi ? e.message : 'Ocurrió un error.'
+                e instanceof ErrorApi ? e.message : 'Ocurrió un error.',
               );
             }
           },
         },
-      ]
+      ],
     );
   }
 
@@ -131,7 +142,7 @@ function ListaReservas() {
               <Text
                 style={{
                   color: activo ? t.sobrePrimario : t.texto,
-                  fontWeight: '700',
+                  fontFamily: fuente.seminegrita,
                 }}
               >
                 {opcion === 'proximas' ? 'Próximas' : 'Pasadas'}
@@ -169,19 +180,12 @@ function ListaReservas() {
                 </View>
 
                 {item.estado === 'confirmada' ? (
-                  <View style={[estilos.contenedorQR, { borderColor: t.borde }]}>
-                    <QRCode
-                      value={item.codigoQr}
-                      size={160}
-                      backgroundColor="#FFFFFF"
-                      color="#000000"
-                    />
-                  </View>
-                ) : null}
-
-                <Text style={[estilos.texto, { color: t.textoSuave }]}>
-                  Código: {item.codigoQr}
-                </Text>
+                  <CodigoQr codigo={item.codigoQr} tamano={160} />
+                ) : (
+                  <Text style={[estilos.texto, { color: t.textoSuave }]}>
+                    Código: {item.codigoQr}
+                  </Text>
+                )}
 
                 {momento === 'proximas' && item.estado === 'confirmada' ? (
                   <Boton
@@ -202,11 +206,21 @@ function ListaReservas() {
 
 const estilos = StyleSheet.create({
   pantalla: { flex: 1 },
-  centro: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24, gap: 16 },
+  centro: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 24,
+    gap: 16,
+  },
   contenido: { padding: 20, paddingBottom: 40, gap: 16 },
-  titulo: { fontSize: 30, fontWeight: '800', marginTop: 8 },
-  subtitulo: { fontSize: tamanos.texto, fontWeight: '800' },
-  texto: { fontSize: tamanos.texto, lineHeight: 23 },
+  titulo: { fontSize: 30, fontFamily: fuente.negrita, marginTop: 8 },
+  subtitulo: { fontSize: tamanos.texto, fontFamily: fuente.negrita },
+  texto: {
+    fontSize: tamanos.texto,
+    lineHeight: 23,
+    fontFamily: fuente.regular,
+  },
   tarjeta: { gap: 10 },
   filtros: {
     flexDirection: 'row',
@@ -232,13 +246,6 @@ const estilos = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: 10,
-  },
-  contenedorQR: {
-    alignItems: 'center',
-    padding: 20,
-    backgroundColor: '#FFFFFF',
-    borderRadius: 12,
-    borderWidth: 1,
   },
   botonCancelar: { marginTop: 4, minHeight: 48 },
 });

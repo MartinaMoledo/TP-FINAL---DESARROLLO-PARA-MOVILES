@@ -2,6 +2,7 @@
 // Si no hay nada de eso, muestra el contenido.
 import type { ReactNode } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import { fuente } from '@/tema/tipografia';
 import { tamanos, useTema } from '@/tema/useTema';
 
 type Props = {
@@ -49,7 +50,7 @@ export function EstadoPantalla({ cargando, error, vacio, mensajeVacio, onReinten
 
 const estilos = StyleSheet.create({
   centro: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24, gap: 16 },
-  texto: { fontSize: tamanos.texto, textAlign: 'center' },
+  texto: { fontSize: tamanos.texto, textAlign: 'center', fontFamily: fuente.regular },
   boton: { minHeight: tamanos.boton, paddingHorizontal: 32, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
-  textoBoton: { fontSize: tamanos.texto, fontWeight: '700' },
+  textoBoton: { fontSize: tamanos.texto, fontFamily: fuente.negrita },
 });

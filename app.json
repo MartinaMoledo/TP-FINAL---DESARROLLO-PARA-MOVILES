@@ -21,7 +21,7 @@
       "predictiveBackGestureEnabled": false
     },
     "web": {
-      "output": "server",
+      "output": "single",
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
@@ -40,13 +40,6 @@
         }
       ],
       "expo-secure-store",
-      [
-        "expo-maps",
-        {
-          "requestLocationPermission": true,
-          "locationPermission": "Permití que Reservas Deportivas use tu ubicación para mostrarte los complejos cercanos."
-        }
-      ],
       [
         "expo-camera",
         {
@@ -69,7 +62,6 @@
           "microphonePermission": false
         }
       ],
-      "expo-notifications",
       [
         "expo-local-authentication",
         {
@@ -81,11 +73,31 @@
       "expo-audio",
       "expo-video",
       "@react-native-vector-icons/ionicons",
-      "expo-asset"
+      "expo-asset",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "enableMinifyInReleaseBuilds": false,
+            "enableShrinkResourcesInReleaseBuilds": false
+          }
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {
+        "asyncRoutes": {
+          "web": true
+        }
+      },
+      "eas": {
+        "projectId": "a108faa5-07f5-4e71-9485-1deca3d32ba1"
+      }
+    },
+    "owner": "grupo39"
   }
 }

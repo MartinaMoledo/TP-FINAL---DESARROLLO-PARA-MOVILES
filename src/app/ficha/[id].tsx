@@ -21,7 +21,7 @@ import MapView, { Marker } from 'react-native-maps';
 import { Boton } from '@/components/Boton';
 import { EstadoPantalla } from '@/components/EstadoPantalla';
 import { Tarjeta } from '@/components/Tarjeta';
-import { useSesion } from '@/contextos/SesionContexto';
+import { esPersonal, useSesion } from '@/contextos/SesionContexto';
 import { useCargar } from '@/hooks/useCargar';
 import { descargasServicio } from '@/servicios/descargas';
 import { espaciosServicio } from '@/servicios/espacios';
@@ -31,6 +31,7 @@ import { fuente } from '@/tema/tipografia';
 import { tamanos, useTema } from '@/tema/useTema';
 import { fuentesDeFotos } from '@/utilidades/fotosEspacio';
 import { abrirComoLlegar } from '@/utilidades/mapas';
+import { complejoDe } from '@/utilidades/complejo';
 
 const ALTO_FOTO = 250;
 
@@ -143,7 +144,10 @@ export default function FichaPantalla() {
     ]);
   }
 
+  // Las fotos del estado de la cancha son un reporte del personal: solo encargado y administrador.
   async function subirFoto() {
+    if (!esPersonal(usuario)) return;
+
     const resultado = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
       quality: 0.8,
@@ -153,6 +157,7 @@ export default function FichaPantalla() {
     try {
       await descargasServicio.guardarFotoSubida(id, resultado.assets[0].uri);
       setSubidas(descargasServicio.fotosSubidas(id));
+      Alert.alert('Foto guardada', 'Quedó guardada en este teléfono, al final de las fotos de esta cancha.');
     } catch {
       Alert.alert('No se pudo guardar la foto', 'Probá de nuevo con otra foto.');
     }
@@ -225,14 +230,16 @@ export default function FichaPantalla() {
                 </View>
               )}
 
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel="Subir una foto del estado de la cancha"
-                onPress={subirFoto}
-                style={[estilos.camara, { backgroundColor: t.acento }]}
-              >
-                <Ionicons name="camera-outline" size={24} color={t.sobreAcento} />
-              </Pressable>
+              {esPersonal(usuario) && (
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Subir desde la galería una foto del estado de la cancha"
+                  onPress={subirFoto}
+                  style={[estilos.camara, { backgroundColor: t.acento }]}
+                >
+                  <Ionicons name="images-outline" size={24} color={t.sobreAcento} />
+                </Pressable>
+              )}
             </View>
 
             <View style={estilos.cuerpo}>
@@ -241,7 +248,8 @@ export default function FichaPantalla() {
                 <View style={{ flex: 1, gap: 2 }}>
                   <Text style={[estilos.titulo, { color: t.texto }]}>{espacio.nombre}</Text>
                   <Text style={[estilos.texto, { color: t.textoSuave }]}>
-                    {datos.deporte} · {espacio.complejo}
+                    {datos.deporte}
+                    {complejoDe(espacio) ? ` · ${complejoDe(espacio)}` : ''}
                   </Text>
                 </View>
 
@@ -324,7 +332,9 @@ export default function FichaPantalla() {
 
               {/* Mapa */}
               <Text style={[estilos.subtitulo, { color: t.texto }]}>Ubicación</Text>
-              <Text style={[estilos.texto, { color: t.textoSuave }]}>{espacio.complejo}</Text>
+              {complejoDe(espacio) && (
+                <Text style={[estilos.texto, { color: t.textoSuave }]}>{complejoDe(espacio)}</Text>
+              )}
               <MapView
                 style={estilos.mapa}
                 scrollEnabled={false}
@@ -343,14 +353,16 @@ export default function FichaPantalla() {
                     latitude: espacio.coordenadas.latitud,
                     longitude: espacio.coordenadas.longitud,
                   }}
-                  title={espacio.complejo}
+                  title={complejoDe(espacio) ?? espacio.nombre}
                 />
               </MapView>
               <Boton
                 titulo="Cómo llegar"
                 variante="secundario"
                 icono={<Ionicons name="navigate-outline" size={22} color={t.texto} />}
-                onPress={() => abrirComoLlegar(espacio.coordenadas, espacio.complejo)}
+                onPress={() =>
+                  abrirComoLlegar(espacio.coordenadas, complejoDe(espacio) ?? espacio.nombre)
+                }
               />
 
               {/* Video */}

@@ -12,6 +12,7 @@ import { Boton } from '@/components/Boton';
 import { Etiqueta } from '@/components/Etiqueta';
 import { Tarjeta } from '@/components/Tarjeta';
 import { esPersonal, useSesion } from '@/contextos/SesionContexto';
+import { fuente } from '@/tema/tipografia';
 import { tamanos, useTema } from '@/tema/useTema';
 import type { Rol } from '@/tipos';
 
@@ -108,33 +109,24 @@ export default function YoPantalla() {
             {NOMBRE_ROL[usuario.rol]}
           </Text>
         </View>
-        <View style={estilos.dato}>
-          <Text style={[estilos.etiquetaDato, { color: t.textoSuave }]}>Favoritos</Text>
-          <Text style={[estilos.valorDato, { color: t.texto }]}>
-            {usuario.espaciosFavoritos.length}
-          </Text>
-        </View>
-        <View style={estilos.dato}>
-          <Text style={[estilos.etiquetaDato, { color: t.textoSuave }]}>Ausencias</Text>
-          <Text style={[estilos.valorDato, { color: t.texto }]}>
-            {usuario.ausencias} · {usuario.cancelacionesTardias} cancelaciones tardías
-          </Text>
-        </View>
+        {/* Favoritos y ausencias son datos del jugador: al personal no le sirven. */}
+        {!esPersonal(usuario) ? (
+          <>
+            <View style={estilos.dato}>
+              <Text style={[estilos.etiquetaDato, { color: t.textoSuave }]}>Favoritos</Text>
+              <Text style={[estilos.valorDato, { color: t.texto }]}>
+                {usuario.espaciosFavoritos.length}
+              </Text>
+            </View>
+            <View style={estilos.dato}>
+              <Text style={[estilos.etiquetaDato, { color: t.textoSuave }]}>Ausencias</Text>
+              <Text style={[estilos.valorDato, { color: t.texto }]}>
+                {usuario.ausencias} · {usuario.cancelacionesTardias} cancelaciones tardías
+              </Text>
+            </View>
+          </>
+        ) : null}
       </Tarjeta>
-
-      {esPersonal(usuario) ? (
-        <Tarjeta style={estilos.tarjeta}>
-          <Text style={[estilos.subtitulo, { color: t.texto }]}>Zona del personal</Text>
-          <Text style={[estilos.texto, { color: t.textoSuave }]}>
-            Desde las pestañas podés ver la agenda, las reservas del día con los teléfonos
-            y registrar ingresos escaneando el QR.
-          </Text>
-          <Boton
-            titulo="Ir a la agenda"
-            onPress={() => router.replace('/(tabs)/agenda')}
-          />
-        </Tarjeta>
-      ) : null}
 
       <Boton titulo="Cerrar sesión" variante="peligro" onPress={confirmarSalida} />
     </ScrollView>
@@ -152,12 +144,12 @@ const estilos = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  inicial: { fontSize: 34, fontWeight: '800' },
-  titulo: { fontSize: 30, fontWeight: '800', textAlign: 'center' },
-  subtitulo: { fontSize: tamanos.texto, fontWeight: '800' },
-  texto: { fontSize: tamanos.texto, lineHeight: 23 },
+  inicial: { fontSize: 34, fontFamily: fuente.negrita },
+  titulo: { fontSize: 30, fontFamily: fuente.negrita, textAlign: 'center' },
+  subtitulo: { fontSize: tamanos.texto, fontFamily: fuente.negrita },
+  texto: { fontSize: tamanos.texto, lineHeight: 23, fontFamily: fuente.regular },
   tarjeta: { gap: 12 },
   dato: { gap: 2 },
-  etiquetaDato: { fontSize: 14, fontWeight: '600' },
-  valorDato: { fontSize: tamanos.texto, fontWeight: '600' },
+  etiquetaDato: { fontSize: 14, fontFamily: fuente.media },
+  valorDato: { fontSize: tamanos.texto, fontFamily: fuente.media },
 });

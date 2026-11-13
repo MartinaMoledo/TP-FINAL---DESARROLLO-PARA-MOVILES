@@ -1,89 +1,145 @@
 // Reservar, ver mis reservas y cancelar.
-import type { Reserva } from '@/tipos';
-import { esperar } from '@/mocks/config';
-import { RESERVAS_MOCK } from '@/mocks/reservas.mock';
-import { turnosReservados } from '@/mocks/turnos.mock';
-import { ESPACIOS_MOCK } from '@/mocks/espacios.mock';
-import { aISOArgentina, restarHoras } from '@/utilidades/fechas';
-import { ErrorApi, pedirLista, pedirUno, USAR_MOCKS } from './cliente';
+import type { Reserva } from "@/tipos";
+import { esperar } from "@/mocks/config";
+import { RESERVAS_MOCK } from "@/mocks/reservas.mock";
+import { turnosReservados } from "@/mocks/turnos.mock";
+import { ESPACIOS_MOCK } from "@/mocks/espacios.mock";
+import { aISOArgentina, restarHoras } from "@/utilidades/fechas";
+import { guardarReservas, leerReservas } from "./baseLocal";
+import { ErrorApi, pedirLista, pedirUno, USAR_MOCKS } from "./cliente";
 
-export type Momento = 'proximas' | 'pasadas';
+export type Momento = "proximas" | "pasadas";
 
 const MAXIMO_ACTIVAS = 3;
 
+async function guardarCopia(lista: Reserva[]): Promise<void> {
+  try {
+    await guardarReservas(lista);
+  } catch (error) {
+    console.log("no se pudo guardar las reservas:", error);
+  }
+}
+
 export const reservasServicio = {
-  async misReservas(cuando: Momento = 'proximas'): Promise<Reserva[]> {
-    if (USAR_MOCKS) {
-      await esperar();
-      return RESERVAS_MOCK.filter((r) => {
-        const fechaTurno = r.turnoId.match(/(\d{4})-(\d{2})-(\d{2})-(\d{2})$/);
+  async misReservas(cuando: Momento = "proximas"): Promise<Reserva[]> {
+    try {
+      let lista: Reserva[];
+      if (USAR_MOCKS) {
+        await esperar();
+        lista = RESERVAS_MOCK.filter((r) => {
+          const fechaTurno = r.turnoId.match(
+            /(\d{4})-(\d{2})-(\d{2})-(\d{2})$/,
+          );
 
-        if (!fechaTurno) return false;
+          if (!fechaTurno) return false;
 
-        const [, anio, mes, dia, hora] = fechaTurno;
-        const inicio = aISOArgentina(`${anio}-${mes}-${dia}`, `${hora}:00`);
-        const esProxima = Date.parse(inicio) > Date.now();
+          const [, anio, mes, dia, hora] = fechaTurno;
+          const inicio = aISOArgentina(`${anio}-${mes}-${dia}`, `${hora}:00`);
+          const esProxima = Date.parse(inicio) > Date.now();
 
-        return cuando === 'proximas'
-          ? esProxima && r.estado === 'confirmada'
-          : !esProxima || r.estado !== 'confirmada';
-      });
+          return cuando === "proximas"
+            ? esProxima && r.estado === "confirmada"
+            : !esProxima || r.estado !== "confirmada";
+        });
+      } else {
+        const { datos } = await pedirLista<Reserva>("/yo/reservas", {
+          conToken: true,
+          query: { cuando },
+        });
+        lista = datos;
+      }
+      await guardarCopia(lista);
+      return lista;
+    } catch (error) {
+      // Sin internet mostramos las reservas guardadas (si hay alguna).
+      if (error instanceof ErrorApi && error.codigo === "SIN_CONEXION") {
+        const guardadas = await leerReservas(cuando === "proximas");
+        if (guardadas.length > 0) return guardadas;
+      }
+      throw error;
     }
-    const { datos } = await pedirLista<Reserva>('/yo/reservas', { conToken: true, query: { cuando } });
-    return datos;
   },
 
   async reservar(turnoId: string, cantidadPersonas: number): Promise<Reserva> {
     if (USAR_MOCKS) {
       await esperar();
-      const activas = RESERVAS_MOCK.filter((r) => r.estado === 'confirmada').length;
+      const activas = RESERVAS_MOCK.filter(
+        (r) => r.estado === "confirmada",
+      ).length;
       if (activas >= MAXIMO_ACTIVAS) {
-        throw new ErrorApi('LIMITE_DE_RESERVAS', 'Ya tenés 3 reservas activas.', 409);
+        throw new ErrorApi(
+          "LIMITE_DE_RESERVAS",
+          "Ya tenés 3 reservas activas.",
+          409,
+        );
       }
       if (turnosReservados.has(turnoId)) {
-        throw new ErrorApi('TURNO_OCUPADO', 'Ese turno ya fue reservado.', 409);
+        throw new ErrorApi("TURNO_OCUPADO", "Ese turno ya fue reservado.", 409);
       }
       // turnoId mock: tur-<espacioId>-<AAAA-MM-DD>-<hh>
-      const partes = turnoId.split('-');
+      const partes = turnoId.split("-");
       const hh = partes.pop()!;
       const dia = partes.pop()!;
       const mes = partes.pop()!;
       const anio = partes.pop()!;
-      const espacioId = partes.slice(1).join('-');
+      const espacioId = partes.slice(1).join("-");
       const fecha = `${anio}-${mes}-${dia}`;
       const inicio = aISOArgentina(fecha, `${hh}:00`);
       const id = `res-${Date.now()}`;
       const nueva: Reserva = {
         id,
         turnoId,
-        espacioId: ESPACIOS_MOCK.find((e) => e.id === espacioId)?.id ?? espacioId,
-        usuarioId: 'usr-207',
+        espacioId:
+          ESPACIOS_MOCK.find((e) => e.id === espacioId)?.id ?? espacioId,
+        usuarioId: "usr-207",
         cantidadPersonas,
         codigoQr: `VGY-${id.slice(4)}`,
-        estado: 'confirmada',
+        estado: "confirmada",
         ingresoEn: null,
         creadaEn: new Date().toISOString(),
         cancelableHasta: restarHoras(inicio, 4),
       };
       RESERVAS_MOCK.unshift(nueva);
       turnosReservados.set(turnoId, id);
+      await guardarCopia([nueva]);
       return nueva;
     }
-    return pedirUno<Reserva>('/reservas', { metodo: 'POST', conToken: true, cuerpo: { turnoId, cantidadPersonas } });
+    const reserva = await pedirUno<Reserva>("/reservas", {
+      metodo: "POST",
+      conToken: true,
+      cuerpo: { turnoId, cantidadPersonas },
+    });
+    await guardarCopia([reserva]);
+    return reserva;
   },
 
   async cancelar(reservaId: string): Promise<Reserva> {
     if (USAR_MOCKS) {
       await esperar();
       const reserva = RESERVAS_MOCK.find((r) => r.id === reservaId);
-      if (!reserva) throw new ErrorApi('RESERVA_NO_ENCONTRADA', 'No existe esa reserva.', 404);
+      if (!reserva)
+        throw new ErrorApi(
+          "RESERVA_NO_ENCONTRADA",
+          "No existe esa reserva.",
+          404,
+        );
       if (Date.now() > Date.parse(reserva.cancelableHasta)) {
-        throw new ErrorApi('CANCELACION_FUERA_DE_PLAZO', 'Faltan menos de 4 horas: tenés que avisarle al encargado.', 409);
+        throw new ErrorApi(
+          "CANCELACION_FUERA_DE_PLAZO",
+          "Faltan menos de 4 horas: tenés que avisarle al encargado.",
+          409,
+        );
       }
-      reserva.estado = 'cancelada';
+      reserva.estado = "cancelada";
       turnosReservados.delete(reserva.turnoId);
+      await guardarCopia([reserva]);
       return reserva;
     }
-    return pedirUno<Reserva>(`/reservas/${reservaId}/cancelacion`, { metodo: 'POST', conToken: true });
+    const reserva = await pedirUno<Reserva>(
+      `/reservas/${reservaId}/cancelacion`,
+      { metodo: "POST", conToken: true },
+    );
+    await guardarCopia([reserva]);
+    return reserva;
   },
 };

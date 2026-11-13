@@ -1,21 +1,34 @@
 {
-  "cli": { "version": ">= 12.0.0" },
+  "cli": {
+    "version": ">= 12.0.0",
+    "appVersionSource": "remote"
+  },
   "build": {
+    "rehearsal": {
+      "distribution": "internal",
+      "environment": "development",
+      "android": { "buildType": "apk" },
+      "env": {
+        "EXPO_PUBLIC_USAR_MOCKS": "true"
+      }
+    },
     "development": {
       "developmentClient": true,
       "distribution": "internal"
     },
     "preview": {
       "distribution": "internal",
+      "environment": "preview",
       "android": { "buildType": "apk" },
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://REEMPLAZAR-con-la-url-publica-de-la-api",
+        "EXPO_PUBLIC_API_URL": "https://api-reservas-deportivas-gr90.onrender.com",
         "EXPO_PUBLIC_USAR_MOCKS": "false"
       }
     },
     "production": {
+      "environment": "production",
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://REEMPLAZAR-con-la-url-publica-de-la-api",
+        "EXPO_PUBLIC_API_URL": "https://api-reservas-deportivas-gr90.onrender.com",
         "EXPO_PUBLIC_USAR_MOCKS": "false"
       }
     }

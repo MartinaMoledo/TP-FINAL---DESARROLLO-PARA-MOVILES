@@ -11,3 +11,18 @@ export function turnoYaPaso(turno: Turno, ahora: number): boolean {
 export function hayTurnoLibre(turnos: Turno[], ahora: number): boolean {
   return turnos.some((t) => t.estado === 'libre' && !turnoYaPaso(t, ahora));
 }
+
+export type EstadoDelDiaEspacio = 'disponible' | 'completa' | 'mantenimiento';
+
+/**
+ * "disponible" si queda un turno libre que no empezó. Si no queda ninguno:
+ * "mantenimiento" si lo que queda está bloqueado (lluvia, arreglos) y nadie lo reservó,
+ * y "completa" en cualquier otro caso (reservado, fijo o ya no quedan turnos hoy).
+ */
+export function estadoDelDia(turnos: Turno[], ahora: number): EstadoDelDiaEspacio {
+  if (hayTurnoLibre(turnos, ahora)) return 'disponible';
+  const quedan = turnos.filter((t) => !turnoYaPaso(t, ahora));
+  const soloMantenimiento =
+    quedan.length > 0 && quedan.every((t) => t.estado === 'mantenimiento');
+  return soloMantenimiento ? 'mantenimiento' : 'completa';
+}
