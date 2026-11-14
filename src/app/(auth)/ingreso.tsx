@@ -153,8 +153,9 @@ const estilos = StyleSheet.create({
   formulario: { gap: 14 },
   demo: { gap: 10 },
   demoTitulo: { fontSize: tamanos.texto, fontFamily: fuente.negrita },
-  fila: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  botonDemo: { flex: 1, minHeight: 48 },
+  // Un botón debajo del otro: en fila, "Administrador" no entraba y el texto se cortaba.
+  fila: { gap: 10 },
+  botonDemo: { minHeight: 48 },
   error: { fontSize: 14, fontFamily: fuente.seminegrita },
   enlace: { paddingVertical: 6 },
   enlaceTexto: { fontSize: tamanos.texto, fontFamily: fuente.negrita, textAlign: 'center' },

@@ -1,14 +1,14 @@
 
 // De dónde sale cada foto de un espacio, en este orden:
-// 1) copias descargadas en el teléfono,
-// 2) las URLs de la API,
-// 3) fotos locales del proyecto.
+// 1) copias descargadas en el teléfono ("Guardar para ver sin datos"),
+// 2) la foto del espacio incluida en el proyecto (assets/canchas),
+// 3) las URLs de la API, como respaldo.
 
 import type { ImageSource } from 'expo-image';
 import type { Espacio } from '@/tipos';
 
 // Imágenes definitivas de los 11 espacios deportivos.
-const FOTOS_ESPACIOS: Record<string, ImageSource> = {
+const FOTOS_ESPACIOS: Record<string, number> = {
   'esp-01': require('../../assets/canchas/futbol5_cancha1.png'),
   'esp-02': require('../../assets/canchas/futbol5_cancha2.png'),
   'esp-03': require('../../assets/canchas/futbol11_cancha1.png'),
@@ -25,7 +25,7 @@ const FOTOS_ESPACIOS: Record<string, ImageSource> = {
 export function fuentesDeFotos(
   espacio: Espacio,
   locales: string[] = []
-): ImageSource[] {
+): (ImageSource | number)[] {
   // Fotos descargadas para consultar sin conexión.
   if (locales.length > 0) {
     return locales.map((uri) => ({ uri }));
@@ -33,17 +33,15 @@ export function fuentesDeFotos(
 
   // Imágenes definitivas incluidas en el proyecto.
   const foto = FOTOS_ESPACIOS[espacio.id];
-  console.log(
-    'FOTO DEBUG:',
-    espacio.id,
-    espacio.nombre,
-    'PNG encontrada:',
-    Boolean(foto)
-  );
   if (foto) {
     return [foto];
   }
 
   // Respaldo para espacios sin imagen local.
   return espacio.imagenes.map((uri) => ({ uri }));
+}
+
+/** El archivo de la foto del proyecto (el resultado de require), para poder copiarlo al teléfono. */
+export function moduloFotoDeEspacio(id: string): number | null {
+  return FOTOS_ESPACIOS[id] ?? null;
 }

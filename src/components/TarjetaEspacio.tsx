@@ -20,7 +20,7 @@ type Props = {
   espacio: Espacio;
   deporte: string;
   estado: EstadoDelDia;
-  foto: ImageSource | null;
+  foto: ImageSource | number | null;
   onPress: () => void;
 };
 

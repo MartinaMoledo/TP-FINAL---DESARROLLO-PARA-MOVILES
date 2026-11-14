@@ -1,7 +1,7 @@
 
 import type { VideoSource } from 'expo-video';
 
-const VIDEOS_ESPACIOS: Record<string, VideoSource> = {
+const VIDEOS_ESPACIOS: Record<string, number> = {
   'esp-01': require('../../assets/videos/futbol5_cancha1.mp4'),
   'esp-02': require('../../assets/videos/futbol5_cancha2.mp4'),
   'esp-03': require('../../assets/videos/futbol11_cancha1.mp4'),
@@ -16,5 +16,10 @@ const VIDEOS_ESPACIOS: Record<string, VideoSource> = {
 };
 
 export function videoDeEspacio(id: string): VideoSource | null {
+  return VIDEOS_ESPACIOS[id] ?? null;
+}
+
+/** El archivo del video del proyecto (el resultado de require), para poder copiarlo al teléfono. */
+export function moduloVideoDeEspacio(id: string): number | null {
   return VIDEOS_ESPACIOS[id] ?? null;
 }
