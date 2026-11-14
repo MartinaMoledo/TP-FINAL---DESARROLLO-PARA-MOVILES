@@ -137,13 +137,28 @@ export default function EspacioPantalla() {
               turno.id,
               cantidadPersonas,
             );
-            await programarRecordatorio({
-              reservaId: reserva.id,
-              inicio: aISOArgentina(turno.fecha, turno.inicio),
-              nombreEspacio: datos?.espacio.nombre ?? 'Tu cancha',
-            });
-            Alert.alert('¡Reserva confirmada!', 'Tu turno fue reservado.');
-            recargar();
+
+            // La reserva ya fue creada correctamente.
+            // Si falla el recordatorio, no debe aparecer como reserva fallida.
+            try {
+              await programarRecordatorio({
+                reservaId: reserva.id,
+                inicio: aISOArgentina(turno.fecha, turno.inicio),
+                nombreEspacio: datos?.espacio.nombre ?? 'Tu cancha',
+              });
+            } catch (errorNotificacion) {
+              console.warn(
+                'No se pudo programar el recordatorio:',
+                errorNotificacion,
+              );
+            }
+
+            Alert.alert(
+              '¡Reserva realizada con éxito!',
+              'Tu turno fue confirmado. Podés consultarlo en Mis reservas.',
+              [{ text: 'Aceptar', onPress: () => recargar() }],
+            );
+
           } catch (e) {
             Alert.alert(
               'No se pudo reservar',

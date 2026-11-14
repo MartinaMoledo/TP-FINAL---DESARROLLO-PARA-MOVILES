@@ -4,6 +4,7 @@ import {
   ActivityIndicator,
   Alert,
   FlatList,
+  Linking,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -23,6 +24,7 @@ import { cancelarRecordatorio } from '@/servicios/notificaciones';
 import { reservasServicio, type Momento } from '@/servicios/reservas';
 import { fuente } from '@/tema/tipografia';
 import { tamanos, useTema } from '@/tema/useTema';
+import { espaciosServicio } from '@/servicios/espacios';
 
 export default function ReservasPantalla() {
   const t = useTema();
@@ -84,9 +86,28 @@ export default function ReservasPantalla() {
   return <ListaReservas />;
 }
 
+function fechaYHorario(turnoId: string) {
+  const partes = turnoId.match(/(\d{4})(\d{2})(\d{2})-(\d{2})$/);
+
+  if (!partes) return null;
+
+  const [, anio, mes, dia, hora] = partes;
+
+  const horaFin = String(Number(hora) + 1).padStart(2, '0');
+
+  return {
+    fecha: `${dia}/${mes}/${anio}`,
+    horario: `${hora}:00 a ${horaFin}:00`,
+  };
+}
+
 function ListaReservas() {
   const t = useTema();
   const [momento, setMomento] = useState<Momento>('proximas');
+  const { datos: espacios } = useCargar(
+    () => espaciosServicio.listar(),
+    [],
+  );
 
   const { datos, cargando, error, recargar } = useCargar(
     () => reservasServicio.misReservas(momento),
@@ -169,13 +190,33 @@ function ListaReservas() {
           contentContainerStyle={estilos.lista}
           renderItem={({ item }) => {
             const etiqueta = etiquetaDeReserva(item.estado);
+         
+            const espacio = espacios?.find((e) => e.id === item.espacioId);
+            const turno = fechaYHorario(item.turnoId);
 
             return (
               <Tarjeta style={estilos.tarjeta}>
                 <View style={estilos.filaSuperior}>
-                  <Text style={[estilos.subtitulo, { color: t.texto }]}>
-                    {item.cantidadPersonas} personas
-                  </Text>
+                  <View style={{ flex: 1, gap: 4 }}>
+                    <Text style={[estilos.subtitulo, { color: t.texto }]}>
+                      {espacio?.nombre ?? 'Espacio deportivo'}
+                    </Text>
+
+                    <Text style={[estilos.texto, { color: t.textoSuave }]}>
+                      {item.cantidadPersonas} personas
+                    </Text>
+                    {turno && (
+                      <View style={{ gap: 4 }}>
+                        <Text style={[estilos.texto, { color: t.textoSuave }]}>
+                          Fecha: {turno.fecha}
+                        </Text>
+
+                        <Text style={[estilos.texto, { color: t.textoSuave }]}>
+                          Horario: {turno.horario}
+                        </Text>
+                      </View>
+                    )}
+                  </View>
                   <Etiqueta texto={etiqueta.texto} tono={etiqueta.tono} />
                 </View>
 
@@ -185,6 +226,23 @@ function ListaReservas() {
                   <Text style={[estilos.texto, { color: t.textoSuave }]}>
                     Código: {item.codigoQr}
                   </Text>
+                )}
+
+                <Text style={[estilos.texto, { color: t.textoSuave }]}>
+                  Pago: Se paga en el lugar
+                </Text>
+
+                {espacio && (
+                  <Boton
+                    titulo="Cómo llegar"
+                    variante="secundario"
+                    onPress={() => {
+                      const { latitud, longitud } = espacio.coordenadas;
+                      Linking.openURL(
+                        `https://www.google.com/maps/search/?api=1&query=${latitud},${longitud}`
+                      );
+                    }}
+                  />
                 )}
 
                 {momento === 'proximas' && item.estado === 'confirmada' ? (
