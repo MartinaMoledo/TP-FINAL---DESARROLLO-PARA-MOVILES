@@ -4,6 +4,7 @@ import { ActivityIndicator, View } from 'react-native';
 import { router, Stack, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { AvisoDeRed } from '@/components/AvisoDeRed';
+import { LogoEncabezado } from '@/components/LogoEncabezado';
 import { PantallaBloqueo } from '@/components/PantallaBloqueo';
 import {
   esPersonal,
@@ -109,6 +110,9 @@ function Raiz() {
             headerStyle: { backgroundColor: t.tarjeta },
             headerTintColor: t.texto,
             headerTitleStyle: { fontFamily: fuente.seminegrita },
+            // Logo de la marca centrado en todas las pantallas con encabezado.
+            headerTitleAlign: 'center',
+            headerTitle: () => <LogoEncabezado />,
             contentStyle: { backgroundColor: t.fondo },
             // Sin esto, el botón de volver muestra el nombre interno de la ruta: "(tabs)".
             headerBackTitle: 'Volver',

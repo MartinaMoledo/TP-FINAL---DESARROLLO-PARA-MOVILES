@@ -9,6 +9,7 @@ import { type ColorValue, View } from 'react-native';
 import { BotonEscanearCentral } from '@/components/BotonEscanearCentral';
 import { BotonModo } from '@/components/BotonModo';
 import { BotonPerfil } from '@/components/BotonPerfil';
+import { LogoEncabezado } from '@/components/LogoEncabezado';
 import { esPersonal, useSesion } from '@/contextos/SesionContexto';
 import { fuente } from '@/tema/tipografia';
 import { useTema } from '@/tema/useTema';
@@ -34,6 +35,9 @@ export default function LayoutPestanas() {
         headerStyle: { backgroundColor: t.tarjeta },
         headerTintColor: t.texto,
         headerTitleStyle: { fontFamily: fuente.seminegrita },
+        // Logo de la marca centrado, en lugar del título de cada pestaña.
+        headerTitleAlign: 'center',
+        headerTitle: () => <LogoEncabezado />,
         // El mismo botón luna/sol del listado, arriba a la derecha en todas las pantallas.
         headerRight: () => (
           <View style={{ marginRight: 16 }}>
