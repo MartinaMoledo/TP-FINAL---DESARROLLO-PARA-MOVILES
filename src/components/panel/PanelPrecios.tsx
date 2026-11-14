@@ -11,6 +11,7 @@ import { personalServicio } from '@/servicios/personal';
 import { fuente } from '@/tema/tipografia';
 import { tamanos, useTema } from '@/tema/useTema';
 import type { Espacio } from '@/tipos';
+import { complejoDe } from '@/utilidades/complejo';
 
 type Props = {
   espacios: Espacio[];
@@ -83,7 +84,7 @@ export function PanelPrecios({ espacios, esAdmin, recargarEspacios }: Props) {
               <Etiqueta texto={precioConMoneda(espacio.precioPorHora)} tono="exito" />
             </View>
             <Text style={[estilos.ayuda, { color: t.textoSuave }]}>
-              {espacio.complejo} · por hora
+              {complejoDe(espacio) ? `${complejoDe(espacio)} · por hora` : 'Por hora'}
             </Text>
             {esAdmin ? (
               <Boton

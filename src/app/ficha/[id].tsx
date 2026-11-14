@@ -21,7 +21,7 @@ import MapView, { Marker } from 'react-native-maps';
 import { Boton } from '@/components/Boton';
 import { EstadoPantalla } from '@/components/EstadoPantalla';
 import { Tarjeta } from '@/components/Tarjeta';
-import { useSesion } from '@/contextos/SesionContexto';
+import { esPersonal, useSesion } from '@/contextos/SesionContexto';
 import { useCargar } from '@/hooks/useCargar';
 import { descargasServicio } from '@/servicios/descargas';
 import { espaciosServicio } from '@/servicios/espacios';
@@ -31,6 +31,9 @@ import { fuente } from '@/tema/tipografia';
 import { tamanos, useTema } from '@/tema/useTema';
 import { fuentesDeFotos } from '@/utilidades/fotosEspacio';
 import { abrirComoLlegar } from '@/utilidades/mapas';
+import { complejoDe } from '@/utilidades/complejo';
+import { videoDeEspacio } from '@/utilidades/videosEspacio';
+import type { VideoSource } from 'expo-video';
 
 const ALTO_FOTO = 250;
 
@@ -44,7 +47,7 @@ function Dato({ etiqueta, valor }: { etiqueta: string; valor: string }) {
   );
 }
 
-function VideoEspacio({ fuente }: { fuente: string }) {
+function VideoEspacio({ fuente }: { fuente: VideoSource }) {
   const t = useTema();
   const [fallo, setFallo] = useState(false);
   const player = useVideoPlayer(fuente);
@@ -110,7 +113,17 @@ export default function FichaPantalla() {
     () => (espacio ? [...fuentesDeFotos(espacio, locales.fotos), ...subidas.map((uri) => ({ uri }))] : []),
     [espacio, locales.fotos, subidas],
   );
-  const fuenteVideo = locales.video ?? espacio?.videoUrl ?? null;
+  const fuenteVideo =
+    (locales.video ? { uri: locales.video } : null) ??
+    (espacio ? videoDeEspacio(espacio.id) : null) ??
+    (espacio?.videoUrl ? { uri: espacio.videoUrl } : null);
+
+  console.log(
+    'VIDEO DEBUG:',
+    espacio?.id,
+    'Fuente encontrada:',
+    fuenteVideo !== null
+  );
 
   async function descargar() {
     if (!espacio) return;
@@ -143,7 +156,10 @@ export default function FichaPantalla() {
     ]);
   }
 
+  // Las fotos del estado de la cancha son un reporte del personal: solo encargado y administrador.
   async function subirFoto() {
+    if (!esPersonal(usuario)) return;
+
     const resultado = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
       quality: 0.8,
@@ -153,6 +169,7 @@ export default function FichaPantalla() {
     try {
       await descargasServicio.guardarFotoSubida(id, resultado.assets[0].uri);
       setSubidas(descargasServicio.fotosSubidas(id));
+      Alert.alert('Foto guardada', 'Quedó guardada en este teléfono, al final de las fotos de esta cancha.');
     } catch {
       Alert.alert('No se pudo guardar la foto', 'Probá de nuevo con otra foto.');
     }
@@ -225,14 +242,16 @@ export default function FichaPantalla() {
                 </View>
               )}
 
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel="Subir una foto del estado de la cancha"
-                onPress={subirFoto}
-                style={[estilos.camara, { backgroundColor: t.acento }]}
-              >
-                <Ionicons name="camera-outline" size={24} color={t.sobreAcento} />
-              </Pressable>
+              {esPersonal(usuario) && (
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel="Subir desde la galería una foto del estado de la cancha"
+                  onPress={subirFoto}
+                  style={[estilos.camara, { backgroundColor: t.acento }]}
+                >
+                  <Ionicons name="images-outline" size={24} color={t.sobreAcento} />
+                </Pressable>
+              )}
             </View>
 
             <View style={estilos.cuerpo}>
@@ -241,7 +260,8 @@ export default function FichaPantalla() {
                 <View style={{ flex: 1, gap: 2 }}>
                   <Text style={[estilos.titulo, { color: t.texto }]}>{espacio.nombre}</Text>
                   <Text style={[estilos.texto, { color: t.textoSuave }]}>
-                    {datos.deporte} · {espacio.complejo}
+                    {datos.deporte}
+                    {complejoDe(espacio) ? ` · ${complejoDe(espacio)}` : ''}
                   </Text>
                 </View>
 
@@ -280,35 +300,37 @@ export default function FichaPantalla() {
                 ${espacio.precioPorHora.toLocaleString('es-AR')} / hora
               </Text>
 
-              {/* Reservar y favorito */}
-              <View style={estilos.accionesFila}>
-                <Boton
-                  titulo="Reservar"
-                  style={{ flex: 1 }}
-                  onPress={() =>
-                    router.push({
-                      pathname: '/espacio/[id]',
-                      params: { id: espacio.id, ...(fecha ? { fecha } : {}) },
-                    })
-                  }
-                />
-                <Pressable
-                  accessibilityRole="button"
-                  accessibilityState={{ selected: esFavorito }}
-                  accessibilityLabel={esFavorito ? 'Quitar de favoritos' : 'Agregar a favoritos'}
-                  onPress={alternarFavorito}
-                  style={[
-                    estilos.favorito,
-                    { backgroundColor: t.tarjeta, borderColor: esFavorito ? t.primario : t.borde },
-                  ]}
-                >
-                  <Ionicons
-                    name={esFavorito ? 'heart' : 'heart-outline'}
-                    size={26}
-                    color={esFavorito ? t.primario : t.texto}
+              {/* Acciones exclusivas del jugador */}
+              {!esPersonal(usuario) && (
+                <View style={estilos.accionesFila}>
+                  <Boton
+                    titulo="Reservar"
+                    style={{ flex: 1 }}
+                    onPress={() =>
+                      router.push({
+                        pathname: '/espacio/[id]',
+                        params: { id: espacio.id, ...(fecha ? { fecha } : {}) },
+                      })
+                    }
                   />
-                </Pressable>
-              </View>
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityState={{ selected: esFavorito }}
+                    accessibilityLabel={esFavorito ? 'Quitar de favoritos' : 'Agregar a favoritos'}
+                    onPress={alternarFavorito}
+                    style={[
+                      estilos.favorito,
+                      { backgroundColor: t.tarjeta, borderColor: esFavorito ? t.primario : t.borde },
+                    ]}
+                  >
+                    <Ionicons
+                      name={esFavorito ? 'heart' : 'heart-outline'}
+                      size={26}
+                      color={esFavorito ? t.primario : t.texto}
+                    />
+                  </Pressable>
+                </View>
+              )}
 
               {/* Información */}
               <Text style={[estilos.subtitulo, { color: t.texto }]}>Información</Text>
@@ -324,7 +346,9 @@ export default function FichaPantalla() {
 
               {/* Mapa */}
               <Text style={[estilos.subtitulo, { color: t.texto }]}>Ubicación</Text>
-              <Text style={[estilos.texto, { color: t.textoSuave }]}>{espacio.complejo}</Text>
+              {complejoDe(espacio) && (
+                <Text style={[estilos.texto, { color: t.textoSuave }]}>{complejoDe(espacio)}</Text>
+              )}
               <MapView
                 style={estilos.mapa}
                 scrollEnabled={false}
@@ -343,20 +367,25 @@ export default function FichaPantalla() {
                     latitude: espacio.coordenadas.latitud,
                     longitude: espacio.coordenadas.longitud,
                   }}
-                  title={espacio.complejo}
+                  title={complejoDe(espacio) ?? espacio.nombre}
                 />
               </MapView>
               <Boton
                 titulo="Cómo llegar"
                 variante="secundario"
                 icono={<Ionicons name="navigate-outline" size={22} color={t.texto} />}
-                onPress={() => abrirComoLlegar(espacio.coordenadas, espacio.complejo)}
+                onPress={() =>
+                  abrirComoLlegar(espacio.coordenadas, complejoDe(espacio) ?? espacio.nombre)
+                }
               />
 
               {/* Video */}
               <Text style={[estilos.subtitulo, { color: t.texto }]}>Video del espacio</Text>
               {fuenteVideo ? (
-                <VideoEspacio key={fuenteVideo} fuente={fuenteVideo} />
+                <VideoEspacio
+                  key={espacio.id}
+                  fuente={fuenteVideo}
+                />
               ) : (
                 <Tarjeta>
                   <Text style={[estilos.texto, { color: t.textoSuave }]}>

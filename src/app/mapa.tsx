@@ -19,6 +19,7 @@ import { useTema } from '@/tema/useTema';
 import type { Coordenadas, Espacio } from '@/tipos';
 import { distanciaKm } from '@/utilidades/distancia';
 import { abrirComoLlegar } from '@/utilidades/mapas';
+import { complejoDe } from '@/utilidades/complejo';
 
 // Centro de Villaguay: el mapa arranca acá si no hay permiso de ubicación.
 const VILLAGUAY: Coordenadas = { latitud: -31.8667, longitud: -59.0333 };
@@ -29,11 +30,16 @@ type Complejo = {
   espacios: number;
 };
 
-/** Un complejo por nombre, ubicado en el promedio de las coordenadas de sus espacios. */
+/**
+ * Un complejo por nombre, ubicado en el promedio de las coordenadas de sus espacios.
+ * Si la API no sabe el complejo ("—"), ese espacio va solo, con su propio nombre y lugar:
+ * promediar espacios que están en lugares distintos daría un punto que no existe.
+ */
 function agruparComplejos(espacios: Espacio[]): Complejo[] {
   const porNombre = new Map<string, Espacio[]>();
   for (const e of espacios) {
-    porNombre.set(e.complejo, [...(porNombre.get(e.complejo) ?? []), e]);
+    const clave = complejoDe(e) ?? e.nombre;
+    porNombre.set(clave, [...(porNombre.get(clave) ?? []), e]);
   }
   return [...porNombre.entries()].map(([nombre, lista]) => ({
     nombre,

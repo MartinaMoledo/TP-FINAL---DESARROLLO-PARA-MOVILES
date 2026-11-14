@@ -109,34 +109,24 @@ export default function YoPantalla() {
             {NOMBRE_ROL[usuario.rol]}
           </Text>
         </View>
-        <View style={estilos.dato}>
-          <Text style={[estilos.etiquetaDato, { color: t.textoSuave }]}>Favoritos</Text>
-          <Text style={[estilos.valorDato, { color: t.texto }]}>
-            {usuario.espaciosFavoritos.length}
-          </Text>
-        </View>
-        <View style={estilos.dato}>
-          <Text style={[estilos.etiquetaDato, { color: t.textoSuave }]}>Ausencias</Text>
-          <Text style={[estilos.valorDato, { color: t.texto }]}>
-            {usuario.ausencias} · {usuario.cancelacionesTardias} cancelaciones tardías
-          </Text>
-        </View>
+        {/* Favoritos y ausencias son datos del jugador: al personal no le sirven. */}
+        {!esPersonal(usuario) ? (
+          <>
+            <View style={estilos.dato}>
+              <Text style={[estilos.etiquetaDato, { color: t.textoSuave }]}>Favoritos</Text>
+              <Text style={[estilos.valorDato, { color: t.texto }]}>
+                {usuario.espaciosFavoritos.length}
+              </Text>
+            </View>
+            <View style={estilos.dato}>
+              <Text style={[estilos.etiquetaDato, { color: t.textoSuave }]}>Ausencias</Text>
+              <Text style={[estilos.valorDato, { color: t.texto }]}>
+                {usuario.ausencias} · {usuario.cancelacionesTardias} cancelaciones tardías
+              </Text>
+            </View>
+          </>
+        ) : null}
       </Tarjeta>
-
-      {esPersonal(usuario) ? (
-        <Tarjeta style={estilos.tarjeta}>
-          <Text style={[estilos.subtitulo, { color: t.texto }]}>Zona del personal</Text>
-          <Text style={[estilos.texto, { color: t.textoSuave }]}>
-            Desde las pestañas podés ver la agenda, las reservas del día con los teléfonos,
-            registrar ingresos escaneando el QR y usar el panel para bloquear turnos, cargar
-            reservas fijas y cambiar precios.
-          </Text>
-          <Boton
-            titulo="Ir a la agenda"
-            onPress={() => router.replace('/(tabs)/agenda')}
-          />
-        </Tarjeta>
-      ) : null}
 
       <Boton titulo="Cerrar sesión" variante="peligro" onPress={confirmarSalida} />
     </ScrollView>

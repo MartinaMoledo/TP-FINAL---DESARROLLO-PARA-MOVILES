@@ -1,9 +1,10 @@
-// Panel del personal: bloqueos, reservas fijas y precio por hora.
+// Panel del personal: bloqueos, reservas fijas, precio por hora y fotos del estado de las canchas.
 import { useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { ChipSeleccion } from '@/components/panel/ChipSeleccion';
 import { PanelBloqueos } from '@/components/panel/PanelBloqueos';
+import { PanelEspacios } from '@/components/panel/PanelEspacios';
 import { PanelFijas } from '@/components/panel/PanelFijas';
 import { PanelPrecios } from '@/components/panel/PanelPrecios';
 import { EstadoPantalla } from '@/components/EstadoPantalla';
@@ -13,12 +14,13 @@ import { personalServicio } from '@/servicios/personal';
 import { fuente } from '@/tema/tipografia';
 import { useTema } from '@/tema/useTema';
 
-type Modo = 'bloqueos' | 'fijas' | 'precios';
+type Modo = 'bloqueos' | 'fijas' | 'precios' | 'espacios';
 
 const MODOS: { id: Modo; texto: string }[] = [
   { id: 'bloqueos', texto: 'Bloqueos' },
   { id: 'fijas', texto: 'Reservas fijas' },
   { id: 'precios', texto: 'Precios' },
+  { id: 'espacios', texto: 'Espacios' },
 ];
 
 export default function PanelPantalla() {
@@ -43,10 +45,8 @@ export default function PanelPantalla() {
         onReintentar={recargar}
       >
         <ScrollView contentContainerStyle={estilos.contenido}>
-          <Text style={[estilos.ayuda, { color: t.textoSuave }]}>
-            {esAdmin
-              ? 'Podés bloquear turnos, cargar reservas fijas y cambiar precios.'
-              : 'Como encargado podés bloquear turnos. Las fijas y los precios los maneja el administrador.'}
+          <Text style={[estilos.titulo, { color: t.texto }]} role="heading">
+            Panel del personal
           </Text>
 
           <View style={estilos.modos}>
@@ -64,12 +64,14 @@ export default function PanelPantalla() {
             <PanelBloqueos espacios={espacios ?? []} />
           ) : modo === 'fijas' ? (
             <PanelFijas espacios={espacios ?? []} esAdmin={esAdmin} />
-          ) : (
+          ) : modo === 'precios' ? (
             <PanelPrecios
               espacios={espacios ?? []}
               esAdmin={esAdmin}
               recargarEspacios={recargar}
             />
+          ) : (
+            <PanelEspacios espacios={espacios ?? []} />
           )}
         </ScrollView>
       </EstadoPantalla>
@@ -80,6 +82,6 @@ export default function PanelPantalla() {
 const estilos = StyleSheet.create({
   pantalla: { flex: 1 },
   contenido: { padding: 16, paddingBottom: 32, gap: 14 },
-  ayuda: { fontSize: 15, lineHeight: 22, fontFamily: fuente.regular },
+  titulo: { fontSize: 28, fontFamily: fuente.negrita },
   modos: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
 });

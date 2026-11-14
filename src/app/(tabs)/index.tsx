@@ -22,11 +22,11 @@ import { EstadoPantalla } from '@/components/EstadoPantalla';
 import { FiltroChip } from '@/components/FiltroChip';
 import { TarjetaEspacio, type EstadoDelDia } from '@/components/TarjetaEspacio';
 import { useCargar } from '@/hooks/useCargar';
-import { descargasServicio } from '@/servicios/descargas';
 import { espaciosServicio } from '@/servicios/espacios';
 import { useMarca } from '@/tema/marca';
 import { fuente } from '@/tema/tipografia';
-import { hayTurnoLibre } from '@/utilidades/disponibilidad';
+import { estadoDelDia, type EstadoDelDiaEspacio } from '@/utilidades/disponibilidad';
+import { complejoDe } from '@/utilidades/complejo';
 import { hoyISO } from '@/utilidades/fechas';
 import { fuentesDeFotos } from '@/utilidades/fotosEspacio';
 
@@ -101,20 +101,21 @@ export default function EspaciosPantalla() {
   const espacios = useMemo(() => catalogo.datos?.espacios ?? [], [catalogo.datos]);
   const idsClave = espacios.map((e) => e.id).join(',');
 
-  // Disponibilidad del día: "Disponible" si queda al menos un turno libre que no pasó.
+  // Estado del día: "Disponible" si queda al menos un turno libre que no pasó; si no,
+  // "En mantenimiento" o "Completa" según por qué no queda ninguno.
   const disponibilidad = useCargar(async () => {
     const ahora = Date.now();
     const pares = await Promise.all(
       espacios.map(async (e) => {
         try {
           const turnos = await espaciosServicio.turnos(e.id, fecha);
-          return [e.id, hayTurnoLibre(turnos, ahora)] as const;
+          return [e.id, estadoDelDia(turnos, ahora)] as const;
         } catch {
           return [e.id, null] as const;
         }
       }),
     );
-    return Object.fromEntries(pares) as Record<string, boolean | null>;
+    return Object.fromEntries(pares) as Record<string, EstadoDelDiaEspacio | null>;
   }, [fecha, idsClave]);
 
   const deportesConEspacios = useMemo(
@@ -125,7 +126,11 @@ export default function EspaciosPantalla() {
     (id: string) => deportesConEspacios.find((d) => d.id === id)?.nombre ?? '',
     [deportesConEspacios],
   );
-  const complejos = useMemo(() => [...new Set(espacios.map((e) => e.complejo))], [espacios]);
+  // Los espacios sin complejo conocido ("—" en la API) no suman un filtro: aparecen en "Todos".
+  const complejos = useMemo(
+    () => [...new Set(espacios.map(complejoDe).filter((c): c is string => c !== null))],
+    [espacios],
+  );
 
   // Si el filtro guardado ya no existe (cambiaron los espacios), se ignora.
   const deporteActivo = deportesConEspacios.some((d) => d.id === deporte) ? deporte : TODOS;
@@ -136,7 +141,7 @@ export default function EspaciosPantalla() {
       espacios.filter(
         (e) =>
           (deporteActivo === TODOS || e.deporteId === deporteActivo) &&
-          (complejoActivo === TODOS || e.complejo === complejoActivo),
+          (complejoActivo === TODOS || complejoDe(e) === complejoActivo),
       ),
     [espacios, deporteActivo, complejoActivo],
   );
@@ -145,17 +150,15 @@ export default function EspaciosPantalla() {
     void version;
     const mapa: Record<string, ReturnType<typeof fuentesDeFotos>[number] | null> = {};
     for (const e of espacios) {
-      mapa[e.id] = fuentesDeFotos(e, descargasServicio.leer(e.id).fotos)[0] ?? null;
+      console.log('ESPACIO REAL:', e.id, e.nombre);
+      mapa[e.id] = fuentesDeFotos(e)[0] ?? null;
     }
     return mapa;
   }, [espacios, version]);
 
   function estadoDe(id: string): EstadoDelDia {
     if (disponibilidad.cargando) return 'consultando';
-    const libre = disponibilidad.datos?.[id];
-    if (libre === true) return 'disponible';
-    if (libre === false) return 'reservada';
-    return 'sin-datos';
+    return disponibilidad.datos?.[id] ?? 'sin-datos';
   }
 
   function recargarTodo() {

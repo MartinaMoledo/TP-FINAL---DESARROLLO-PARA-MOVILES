@@ -7,8 +7,14 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useMarca } from '@/tema/marca';
 import { fuente } from '@/tema/tipografia';
 import type { Espacio } from '@/tipos';
+import { complejoDe } from '@/utilidades/complejo';
 
-export type EstadoDelDia = 'disponible' | 'reservada' | 'consultando' | 'sin-datos';
+export type EstadoDelDia =
+  | 'disponible'
+  | 'completa'
+  | 'mantenimiento'
+  | 'consultando'
+  | 'sin-datos';
 
 type Props = {
   espacio: Espacio;
@@ -28,7 +34,8 @@ function EtiquetaChica({ texto, fondo, color }: { texto: string; fondo: string; 
 
 export function TarjetaEspacio({ espacio, deporte, estado, foto, onPress }: Props) {
   const m = useMarca();
-  const llena = estado === 'reservada';
+  // Completa o en mantenimiento: no se puede reservar, la tarjeta va en gris.
+  const llena = estado === 'completa' || estado === 'mantenimiento';
 
   const colores = llena
     ? {
@@ -50,7 +57,8 @@ export function TarjetaEspacio({ espacio, deporte, estado, foto, onPress }: Prop
 
   const textoEstado = {
     disponible: 'Disponible',
-    reservada: 'Reservada',
+    completa: 'Completa',
+    mantenimiento: 'En mantenimiento',
     consultando: 'Consultando…',
     'sin-datos': 'Sin datos',
   }[estado];
@@ -69,7 +77,8 @@ export function TarjetaEspacio({ espacio, deporte, estado, foto, onPress }: Prop
         <View style={estilos.titulos}>
           <Text style={[estilos.nombre, { color: colores.texto }]}>{espacio.nombre}</Text>
           <Text style={[estilos.sub, { color: colores.texto }]}>
-            {deporte} · {espacio.complejo}
+            {deporte}
+            {complejoDe(espacio) ? ` · ${complejoDe(espacio)}` : ''}
           </Text>
         </View>
 

@@ -52,33 +52,33 @@ function Raiz() {
     const enAuth = grupo === '(auth)';
 
     // Con sesión abierta no tiene sentido quedarse en las pantallas de ingreso.
+    // El jugador vuelve a donde estaba (por ejemplo, la grilla para terminar la reserva);
+    // el personal va a su Agenda.
     if (usuario && enAuth) {
-      router.replace(esPersonal(usuario) ? '/(tabs)/agenda' : '/(tabs)');
+      if (esPersonal(usuario)) router.replace('/(tabs)/agenda');
+      else if (router.canGoBack()) router.back();
+      else router.replace('/(tabs)');
       return;
     }
 
-    // Encargados y administradores trabajan en la zona del personal.
+    // Encargados y administradores trabajan en la zona del personal: Espacios y "Mis reservas"
+    // son del jugador. Al abrir la app caen en Espacios (la ruta inicial), así que van a la Agenda.
     if (esPersonal(usuario)) {
-      const zonaJugador =
-        grupo === '(tabs)' &&
-        (pantalla === undefined || pantalla === 'reservas');
+      const zonaJugador = grupo === '(tabs)' && (pantalla === undefined || pantalla === 'reservas');
       if (zonaJugador) router.replace('/(tabs)/agenda');
       return;
     }
 
-    // Jugadores y anónimos no entran a agenda, reservas del día, escaneo ni panel.
-    const pantallasDelPersonal = [
-      'agenda',
-      'reservas-dia',
-      'escanear',
-      'panel',
-    ];
+    // Jugadores y anónimos no entran a la agenda, el escaneo ni el panel.
+    const pantallasDelPersonal = ['agenda', 'escanear', 'panel'];
     const zonaPersonal =
       grupo === '(tabs)' &&
       pantalla !== undefined &&
       pantallasDelPersonal.includes(pantalla);
+    // Sin cuenta, o con cuenta de jugador, se vuelve a Espacios: mirar no pide cuenta (PRD).
+    // La cuenta se pide recién al reservar o marcar un favorito.
     if (zonaPersonal) {
-      router.replace(usuario ? '/(tabs)' : '/(auth)/ingreso');
+      router.replace('/(tabs)');
     }
   }, [cargando, usuario, segmentos]);
 
@@ -110,11 +110,14 @@ function Raiz() {
             headerTintColor: t.texto,
             headerTitleStyle: { fontFamily: fuente.seminegrita },
             contentStyle: { backgroundColor: t.fondo },
+            // Sin esto, el botón de volver muestra el nombre interno de la ruta: "(tabs)".
+            headerBackTitle: 'Volver',
           }}
         >
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
           <Stack.Screen name="(auth)" options={{ headerShown: false }} />
           <Stack.Screen name="espacio/[id]" options={{ title: 'Espacio' }} />
+          <Stack.Screen name="cuenta" options={{ title: 'Tu cuenta' }} />
         </Stack>
         {/* Tapa toda la app hasta que la persona confirme que es ella. */}
         {usuario && bloqueada && (

@@ -1,4 +1,4 @@
-// Tira de días para la agenda y las reservas del personal.
+// Tira de días para la agenda y los bloqueos del personal.
 import { useMemo } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text } from 'react-native';
 
@@ -33,6 +33,8 @@ export function SelectorFecha({ fecha, onCambiar, dias = 7 }: Props) {
     <ScrollView
       horizontal
       showsHorizontalScrollIndicator={false}
+      // Sin esto, la tira ocupa todo el alto libre y los botones se estiran como óvalos gigantes.
+      style={estilos.tira}
       contentContainerStyle={estilos.contenido}
     >
       {fechas.map((dia) => {
@@ -68,7 +70,9 @@ export function SelectorFecha({ fecha, onCambiar, dias = 7 }: Props) {
 }
 
 const estilos = StyleSheet.create({
+  tira: { flexGrow: 0 },
   contenido: {
+    alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 12,
     gap: 8,

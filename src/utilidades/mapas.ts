@@ -8,7 +8,9 @@ export async function abrirComoLlegar(destino: Coordenadas, nombre: string): Pro
   const etiqueta = encodeURIComponent(nombre);
 
   const nativa = Platform.select({
-    ios: `http://maps.apple.com/?daddr=${latitud},${longitud}&q=${etiqueta}`,
+    // maps:// abre directo la app Mapas (http:// puede abrirse en el navegador).
+    // Sin origen (saddr), arranca la ruta desde la ubicación actual. dirflg=d: en auto.
+    ios: `maps://?daddr=${latitud},${longitud}&dirflg=d`,
     default: `geo:0,0?q=${latitud},${longitud}(${etiqueta})`,
   });
   const web = `https://www.google.com/maps/dir/?api=1&destination=${latitud},${longitud}`;

@@ -45,9 +45,16 @@ export default function IngresoPantalla() {
     }
   }
 
-  function completarDemo(cuenta: 'jugador' | 'encargado') {
+  function completarDemo(cuenta: 'jugador' | 'encargado' | 'administrador') {
     setError(null);
-    setEmail(cuenta === 'jugador' ? 'emiliano@mail.com' : 'marcelo@villaguay.demo.ar');
+
+    const correos = {
+      jugador: 'emiliano@mail.com',
+      encargado: 'marcelo@villaguay.demo.ar',
+      administrador: 'nahuel@villaguay.demo.ar',
+    };
+
+    setEmail(correos[cuenta]);
     setContrasena('villaguay2026');
   }
 
@@ -112,6 +119,12 @@ export default function IngresoPantalla() {
               onPress={() => completarDemo('encargado')}
               style={estilos.botonDemo}
             />
+            <Boton
+              titulo="Administrador"
+              variante="secundario"
+              onPress={() => completarDemo('administrador')}
+              style={estilos.botonDemo}
+            />
           </View>
         </Tarjeta>
 
@@ -140,7 +153,7 @@ const estilos = StyleSheet.create({
   formulario: { gap: 14 },
   demo: { gap: 10 },
   demoTitulo: { fontSize: tamanos.texto, fontFamily: fuente.negrita },
-  fila: { flexDirection: 'row', gap: 10 },
+  fila: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   botonDemo: { flex: 1, minHeight: 48 },
   error: { fontSize: 14, fontFamily: fuente.seminegrita },
   enlace: { paddingVertical: 6 },

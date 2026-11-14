@@ -1,4 +1,4 @@
-// Agenda, reservas del día, bloqueos, reservas fijas y precios del personal.
+// Agenda del día, bloqueos, reservas fijas y precios del personal.
 import type { Espacio, Reserva, ReservaFija, Turno, Usuario } from '@/tipos';
 import { pedirLista, pedirSinRespuesta, pedirUno } from './cliente';
 
@@ -47,6 +47,72 @@ export type CambiosFija = {
   hasta?: string | null;
   activa?: boolean;
 };
+
+/** Fija o bloqueo de un espacio en un rango de horas (los turnos seguidos se juntan). */
+export type BloqueDelDia = {
+  tipo: 'fijo' | 'mantenimiento';
+  espacio: Espacio | null;
+  inicio: string; // "HH:MM"
+  fin: string;
+  detalle: string; // titular de la fija o motivo del bloqueo
+};
+
+export type AgendaDelDia = {
+  reservas: ReservaDelDia[];
+  bloques: BloqueDelDia[];
+};
+
+/** Junta los turnos fijos y bloqueados seguidos: "08:00 a 24:00 · Lluvia" y no 16 filas. */
+function armarBloques(
+  turnos: Turno[],
+  espacioPorId: Map<string, Espacio>,
+  fijas: ReservaFija[],
+  fecha: string
+): BloqueDelDia[] {
+  // 0 = domingo, igual que en las reservas fijas. Mediodía para que la zona horaria no corra el día.
+  const dia = new Date(`${fecha}T12:00:00`).getDay();
+  const bloques: BloqueDelDia[] = [];
+
+  const ocupados = turnos
+    .filter((turno) => turno.estado === 'fijo' || turno.estado === 'mantenimiento')
+    .sort((a, b) => a.espacioId.localeCompare(b.espacioId) || a.inicio.localeCompare(b.inicio));
+
+  for (const turno of ocupados) {
+    const tipo = turno.estado as BloqueDelDia['tipo'];
+    const detalle =
+      tipo === 'mantenimiento'
+        ? (turno.motivoBloqueo ?? 'Sin motivo')
+        : (fijas.find(
+            (f) =>
+              f.activa &&
+              f.espacioId === turno.espacioId &&
+              f.dia === dia &&
+              turno.inicio >= f.inicio &&
+              turno.inicio < f.fin
+          )?.titular ?? 'Reserva fija');
+
+    const anterior = bloques[bloques.length - 1];
+    const sigue =
+      anterior &&
+      anterior.espacio?.id === turno.espacioId &&
+      anterior.tipo === tipo &&
+      anterior.detalle === detalle &&
+      anterior.fin === turno.inicio;
+
+    if (sigue) {
+      anterior.fin = turno.fin;
+    } else {
+      bloques.push({
+        tipo,
+        espacio: espacioPorId.get(turno.espacioId) ?? null,
+        inicio: turno.inicio,
+        fin: turno.fin,
+        detalle,
+      });
+    }
+  }
+  return bloques;
+}
 
 async function traerAgenda(fecha: string): Promise<Turno[]> {
   const { datos } = await pedirLista<Turno>('/agenda', {
@@ -135,18 +201,18 @@ export const personalServicio = {
   espacios: traerEspacios,
   usuario: traerUsuario,
 
-  /** Agenda completa de un día, con el nombre de cada espacio. */
-  async agendaDelDia(fecha: string): Promise<{ turnos: Turno[]; espacios: Espacio[] }> {
-    const [turnos, espacios] = await Promise.all([traerAgenda(fecha), traerEspacios()]);
-    return { turnos, espacios };
-  },
-
-  /** Reservas del día enriquecidas con turno, espacio y datos del jugador. */
-  async reservasDelDia(fecha: string): Promise<ReservaDelDia[]> {
-    const [turnos, reservas, espacios] = await Promise.all([
+  /**
+   * Agenda del día para el personal: las reservas (con turno, espacio y datos del jugador)
+   * y los turnos que ocupan la cancha sin una reserva: las fijas y los bloqueos.
+   * Los turnos libres no se muestran: al encargado le sirve saber quién viene, no qué sobra.
+   */
+  async agendaDelDia(fecha: string): Promise<AgendaDelDia> {
+    const [turnos, reservas, espacios, fijas] = await Promise.all([
       traerAgenda(fecha),
       traerReservas(fecha),
       traerEspacios(),
+      // Si no se pueden traer las fijas, la agenda igual se muestra (sin el nombre del titular).
+      traerFijas().catch(() => [] as ReservaFija[]),
     ]);
 
     const turnoPorId = new Map(turnos.map((turno) => [turno.id, turno]));
@@ -160,22 +226,17 @@ export const personalServicio = {
       })
     );
 
-    return reservas
-      .map((reserva) => {
-        const turno = turnoPorId.get(reserva.turnoId) ?? null;
-        return {
-          reserva,
-          turno,
-          espacio: espacioPorId.get(reserva.espacioId) ?? null,
-          usuario: usuarios.get(reserva.usuarioId) ?? null,
-        };
-      })
-      .sort((a, b) => {
-        const espacioA = a.espacio?.nombre ?? '';
-        const espacioB = b.espacio?.nombre ?? '';
-        if (espacioA !== espacioB) return espacioA.localeCompare(espacioB);
-        return (a.turno?.inicio ?? '').localeCompare(b.turno?.inicio ?? '');
-      });
+    const conDatos: ReservaDelDia[] = reservas.map((reserva) => ({
+      reserva,
+      turno: turnoPorId.get(reserva.turnoId) ?? null,
+      espacio: espacioPorId.get(reserva.espacioId) ?? null,
+      usuario: usuarios.get(reserva.usuarioId) ?? null,
+    }));
+
+    return {
+      reservas: conDatos,
+      bloques: armarBloques(turnos, espacioPorId, fijas, fecha),
+    };
   },
 
   async marcarAusente(reservaId: string): Promise<Reserva> {

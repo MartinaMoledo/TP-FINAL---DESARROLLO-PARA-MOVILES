@@ -47,12 +47,14 @@ const claro: ColoresTema = {
   acento: identidad.menta,
   sobreAcento: '#00281B',
   advertencia: identidad.naranja,
-  error: '#B3261E',
+  // Sin rojo en la app: errores, "Marcar ausente" y ocupado usan el naranja de la marca.
+  error: identidad.naranja,
   sobreError: identidad.blanco,
   libre: identidad.verde,
-  ocupado: '#B3261E',
+  ocupado: identidad.naranja,
   fijo: '#5B2A86',
-  mantenimiento: '#A34F19',
+  // Gris: con el naranja para ocupado, el marrón anterior no se distinguía en la grilla.
+  mantenimiento: '#6B6B6B',
 };
 
 const oscuro: ColoresTema = {
@@ -67,12 +69,13 @@ const oscuro: ColoresTema = {
   acento: identidad.menta,
   sobreAcento: '#00281B',
   advertencia: identidad.amarillo,
-  error: '#FF8A80',
-  sobreError: '#3A0A06',
+  // El naranja de la marca, un poco más claro para que se lea sobre el fondo oscuro.
+  error: '#E8894A',
+  sobreError: '#2A1205',
   libre: identidad.menta,
-  ocupado: '#FF8A80',
+  ocupado: '#E8894A',
   fijo: '#D0A2F5',
-  mantenimiento: '#FFB870',
+  mantenimiento: '#A8A8A8',
 };
 
 export function useTema() {
