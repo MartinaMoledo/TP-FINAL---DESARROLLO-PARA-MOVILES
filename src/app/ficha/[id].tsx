@@ -32,6 +32,8 @@ import { tamanos, useTema } from '@/tema/useTema';
 import { fuentesDeFotos } from '@/utilidades/fotosEspacio';
 import { abrirComoLlegar } from '@/utilidades/mapas';
 import { complejoDe } from '@/utilidades/complejo';
+import { videoDeEspacio } from '@/utilidades/videosEspacio';
+import type { VideoSource } from 'expo-video';
 
 const ALTO_FOTO = 250;
 
@@ -45,7 +47,7 @@ function Dato({ etiqueta, valor }: { etiqueta: string; valor: string }) {
   );
 }
 
-function VideoEspacio({ fuente }: { fuente: string }) {
+function VideoEspacio({ fuente }: { fuente: VideoSource }) {
   const t = useTema();
   const [fallo, setFallo] = useState(false);
   const player = useVideoPlayer(fuente);
@@ -111,7 +113,17 @@ export default function FichaPantalla() {
     () => (espacio ? [...fuentesDeFotos(espacio, locales.fotos), ...subidas.map((uri) => ({ uri }))] : []),
     [espacio, locales.fotos, subidas],
   );
-  const fuenteVideo = locales.video ?? espacio?.videoUrl ?? null;
+  const fuenteVideo =
+    (locales.video ? { uri: locales.video } : null) ??
+    (espacio ? videoDeEspacio(espacio.id) : null) ??
+    (espacio?.videoUrl ? { uri: espacio.videoUrl } : null);
+
+  console.log(
+    'VIDEO DEBUG:',
+    espacio?.id,
+    'Fuente encontrada:',
+    fuenteVideo !== null
+  );
 
   async function descargar() {
     if (!espacio) return;
@@ -368,7 +380,10 @@ export default function FichaPantalla() {
               {/* Video */}
               <Text style={[estilos.subtitulo, { color: t.texto }]}>Video del espacio</Text>
               {fuenteVideo ? (
-                <VideoEspacio key={fuenteVideo} fuente={fuenteVideo} />
+                <VideoEspacio
+                  key={espacio.id}
+                  fuente={fuenteVideo}
+                />
               ) : (
                 <Tarjeta>
                   <Text style={[estilos.texto, { color: t.textoSuave }]}>

@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from 'react';
 import { router, useLocalSearchParams } from 'expo-router';
 import {
   Alert,
-  Image,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -22,6 +21,8 @@ import { programarRecordatorio } from '@/servicios/notificaciones';
 import type { EstadoTurno, Turno } from '@/tipos';
 import { complejoDe } from '@/utilidades/complejo';
 import { turnoYaPaso } from '@/utilidades/disponibilidad';
+import { fuentesDeFotos } from '@/utilidades/fotosEspacio';
+import { Image } from 'expo-image';
 
 function sumarDias(fecha: string, dias: number) {
   const [anio, mes, dia] = fecha.split('-').map(Number);
@@ -159,12 +160,9 @@ export default function EspacioPantalla() {
         {datos && (
           <ScrollView contentContainerStyle={estilos.contenido}>
             <Image
-              source={
-                id === 'esp-01'
-                  ? require('../../../assets/canchas/cancha_01.jpg')
-                  : require('../../../assets/canchas/cancha_02.jpg')
-              }
+              source={fuentesDeFotos(datos.espacio)[0]}
               style={estilos.imagen}
+              contentFit="cover"
             />
 
             <Text style={[estilos.titulo, { color: t.texto }]}>

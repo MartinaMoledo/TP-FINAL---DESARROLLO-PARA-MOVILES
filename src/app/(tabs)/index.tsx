@@ -151,7 +151,8 @@ export default function EspaciosPantalla() {
     void version;
     const mapa: Record<string, ReturnType<typeof fuentesDeFotos>[number] | null> = {};
     for (const e of espacios) {
-      mapa[e.id] = fuentesDeFotos(e, descargasServicio.leer(e.id).fotos)[0] ?? null;
+      console.log('ESPACIO REAL:', e.id, e.nombre);
+      mapa[e.id] = fuentesDeFotos(e)[0] ?? null;
     }
     return mapa;
   }, [espacios, version]);
