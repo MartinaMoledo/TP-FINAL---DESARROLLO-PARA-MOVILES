@@ -1,7 +1,7 @@
 // Carga datos de un servicio y devuelve los tres estados que pide la consigna:
 // cargando, error y (lo vacío lo decide la pantalla mirando los datos).
-import { useEffect, useState } from 'react';
 import { ErrorApi } from '@/servicios/cliente';
+import { useCallback, useEffect, useState } from 'react';
 
 export function useCargar<T>(cargar: () => Promise<T>, dependencias: unknown[] = []) {
   const [datos, setDatos] = useState<T | null>(null);
@@ -33,5 +33,9 @@ export function useCargar<T>(cargar: () => Promise<T>, dependencias: unknown[] =
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clave, intento]);
 
-  return { datos, cargando, error, recargar: () => setIntento((n) => n + 1) };
+  const recargar = useCallback(() => {
+    setIntento((n) => n + 1);
+  }, []);
+
+  return { datos, cargando, error, recargar };
 }

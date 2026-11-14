@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
+import { useCallback, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -20,11 +20,11 @@ import { Tarjeta } from '@/components/Tarjeta';
 import { esPersonal, useSesion } from '@/contextos/SesionContexto';
 import { useCargar } from '@/hooks/useCargar';
 import { ErrorApi } from '@/servicios/cliente';
-import { cancelarRecordatorio } from '@/servicios/notificaciones';  
+import { espaciosServicio } from '@/servicios/espacios';
+import { cancelarRecordatorio } from '@/servicios/notificaciones';
 import { reservasServicio, type Momento } from '@/servicios/reservas';
 import { fuente } from '@/tema/tipografia';
 import { tamanos, useTema } from '@/tema/useTema';
-import { espaciosServicio } from '@/servicios/espacios';
 
 export default function ReservasPantalla() {
   const t = useTema();
@@ -113,7 +113,12 @@ function ListaReservas() {
     () => reservasServicio.misReservas(momento),
     [momento],
   );
-
+  // Actualiza las reservas cada vez que volvemos a esta pantalla.
+  useFocusEffect(
+    useCallback(() => {
+      recargar();
+    }, [recargar]),
+  );
   function cancelarReserva(reservaId: string) {
     Alert.alert(
       'Cancelar reserva',
