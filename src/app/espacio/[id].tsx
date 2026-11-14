@@ -111,6 +111,13 @@ export default function EspacioPantalla() {
   const filas = useMemo(() => armarFilas(datos?.turnos ?? [], ahora), [datos, ahora]);
 
   const reservarTurno = (turno: Turno) => {
+    if (usuario?.rol === 'encargado' || usuario?.rol === 'administrador') {
+      Alert.alert(
+        'Acceso no permitido',
+        'Las reservas de turnos están disponibles únicamente para jugadores.'
+      );
+      return;
+    }
     // Mirar no pide cuenta, pero reservar sí (PRD y respuesta de la cátedra en el foro).
     if (!usuario) {
       Alert.alert('Necesitás una cuenta para reservar', 'Ingresá o creá una cuenta para seguir.', [

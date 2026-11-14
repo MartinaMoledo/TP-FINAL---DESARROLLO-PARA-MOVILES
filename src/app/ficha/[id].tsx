@@ -300,35 +300,37 @@ export default function FichaPantalla() {
                 ${espacio.precioPorHora.toLocaleString('es-AR')} / hora
               </Text>
 
-              {/* Reservar y favorito */}
-              <View style={estilos.accionesFila}>
-                <Boton
-                  titulo="Reservar"
-                  style={{ flex: 1 }}
-                  onPress={() =>
-                    router.push({
-                      pathname: '/espacio/[id]',
-                      params: { id: espacio.id, ...(fecha ? { fecha } : {}) },
-                    })
-                  }
-                />
-                <Pressable
-                  accessibilityRole="button"
-                  accessibilityState={{ selected: esFavorito }}
-                  accessibilityLabel={esFavorito ? 'Quitar de favoritos' : 'Agregar a favoritos'}
-                  onPress={alternarFavorito}
-                  style={[
-                    estilos.favorito,
-                    { backgroundColor: t.tarjeta, borderColor: esFavorito ? t.primario : t.borde },
-                  ]}
-                >
-                  <Ionicons
-                    name={esFavorito ? 'heart' : 'heart-outline'}
-                    size={26}
-                    color={esFavorito ? t.primario : t.texto}
+              {/* Acciones exclusivas del jugador */}
+              {!esPersonal(usuario) && (
+                <View style={estilos.accionesFila}>
+                  <Boton
+                    titulo="Reservar"
+                    style={{ flex: 1 }}
+                    onPress={() =>
+                      router.push({
+                        pathname: '/espacio/[id]',
+                        params: { id: espacio.id, ...(fecha ? { fecha } : {}) },
+                      })
+                    }
                   />
-                </Pressable>
-              </View>
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityState={{ selected: esFavorito }}
+                    accessibilityLabel={esFavorito ? 'Quitar de favoritos' : 'Agregar a favoritos'}
+                    onPress={alternarFavorito}
+                    style={[
+                      estilos.favorito,
+                      { backgroundColor: t.tarjeta, borderColor: esFavorito ? t.primario : t.borde },
+                    ]}
+                  >
+                    <Ionicons
+                      name={esFavorito ? 'heart' : 'heart-outline'}
+                      size={26}
+                      color={esFavorito ? t.primario : t.texto}
+                    />
+                  </Pressable>
+                </View>
+              )}
 
               {/* Información */}
               <Text style={[estilos.subtitulo, { color: t.texto }]}>Información</Text>
